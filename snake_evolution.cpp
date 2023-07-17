@@ -1,7 +1,7 @@
 #include <iostream>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
-#include <GL/glx.h>
+// #include <GL/glx.h>
 
 //for print errr
 static void glfwErrorCallback(int id, const char* err)
@@ -12,6 +12,11 @@ static void glfwErrorCallback(int id, const char* err)
 
 int main()
 {
+    //set required opengl version
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
+    // glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    
     //Call error callback function to print errors when they happen
     glfwSetErrorCallback(&glfwErrorCallback);
 
