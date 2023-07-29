@@ -4,22 +4,36 @@
 // #include <GL/glx.h>
 #include <string>
 
-//for print errr
+
+static bool play_button_selected = true;
+
+//for printing errors
 static void glfwErrorCallback(int id, const char* err)
 {
   std::cerr << err <<"\n";
 }
 
+
+//Handle user inputs
 void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
-    std::cout << "Key is: " << key << "\n";
+    std::cout << "Key is: " << key << "\n"; //TODO remove
+
+    //escape key: close game
     if(key == GLFW_KEY_ESCAPE)
     {
         glfwSetWindowShouldClose(window, true);   
     }
+
+    //up and down switches the selected button
+    if((key == GLFW_KEY_UP && action == GLFW_PRESS) || (key == GLFW_KEY_DOWN && action == GLFW_PRESS))
+    {
+        play_button_selected = !play_button_selected;
+    }
 }
 
 
+//creates a rectangle whose bottom left position is given. if selected is true, also draws an outline
 void make_rectangle(const float left, const float bottom, const bool selected)
 {
     const float width = 0.6;
@@ -35,17 +49,16 @@ void make_rectangle(const float left, const float bottom, const bool selected)
         
     glEnd();
 
-    //draw outline too
+    //draw outline of the rectangle too
     if(selected)
     {
         GLfloat lineWidthRange[2] = {0.0f, 0.0f};
         // glGetFloatv(GL_ALIASED_LINE_WIDTH_RANGE, lineWidthRange);
         // std::cout << "max line width: " << lineWidthRange[0];
 
-        // const float offset = 0.01;
         glLineWidth(7);
         glBegin(GL_LINES);
-            glColor3f(0,1,0);
+            glColor3f(0,0.7,0);
 
             //left side's line
             glVertex2f(left, bottom);
@@ -70,41 +83,15 @@ void make_rectangle(const float left, const float bottom, const bool selected)
 
 void main_menu_button(const std::string text, const bool selected)
 {
-    // int width, height;
-    // glfwGetFramebufferSize(window, &width, &height);
-    // glLineWidth(0.3);
     
     if(text == "Play")
     {
-        //draw button itself
-        // const float left = -0.2;
-        // const float bottom = 0;
-
         make_rectangle(-0.3, 0, selected);
-        
-
     } else if(text == "Quit")
     {
-        // const float left = -0.2;
-        // const float bottom = -0.3;
-        // const float width = 0.4;
-        // const float height = 0.2;
-        // glBegin(GL_QUADS);
-        //     const float c = 1;
-        //     glColor3f(c,c,c);
-        //     glVertex2f(left,bottom);
-        //     glColor3f(c,c,c);
-        //     glVertex2f(left+width,bottom);
-        //     glColor3f(c,c,c);
-        //     glVertex2f(left+width,bottom+height);
-        //     glColor3f(c,c,c);
-        //     glVertex2f(left,bottom+height);
-        // glEnd();
         make_rectangle(-0.3, -0.3, selected);
 
     }
-    
-    
 }
 
 
@@ -159,7 +146,7 @@ int main()
     while(!glfwWindowShouldClose(window))
     {
         // glfwSetWindowShouldClose(window, true);    
-        // glClear(GL_COLOR_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT);
         float ratio;
         int width, height;
         glfwGetFramebufferSize(window, &width, &height);
@@ -183,8 +170,8 @@ int main()
         // glClear(GL_COLOR_BUFFER_BIT);
         // glMatrixMode(GL_PROJECTION);
 
-        main_menu_button("Play", true);
-        main_menu_button("Quit", false);
+        main_menu_button("Play", play_button_selected);
+        main_menu_button("Quit", !play_button_selected);
 
         glfwSwapBuffers(window);
 
