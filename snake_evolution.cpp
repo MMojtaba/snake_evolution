@@ -3,6 +3,16 @@
 #include <GLFW/glfw3.h>
 // #include <GL/glx.h>
 #include <string>
+#include <fstream>
+
+
+void print_gl_version()
+{
+    std::cout << "GL version: " << glGetString(GL_VERSION) << std::endl;
+    std::cout << "GL vendor : " << glGetString(GL_VENDOR  ) << std::endl;
+    std::cout << "GL renderer: " << glGetString(GL_RENDERER ) << std::endl;
+    std::cout << "GLSL version: " << glGetString(GL_SHADING_LANGUAGE_VERSION  ) << std::endl;
+}
 
 
 static bool play_button_selected = true;
@@ -17,7 +27,7 @@ static void glfwErrorCallback(int id, const char* err)
 //Handle user inputs
 void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
-    std::cout << "Key is: " << key << "\n"; //TODO remove
+    // std::cout << "Key is: " << key << "\n"; 
 
     //escape key: close game
     if(key == GLFW_KEY_ESCAPE)
@@ -25,84 +35,68 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
         glfwSetWindowShouldClose(window, true);   
     }
 
-    //up and down switches the selected button
+    //up and down switches the selected button in the main menu
     if((key == GLFW_KEY_UP && action == GLFW_PRESS) || (key == GLFW_KEY_DOWN && action == GLFW_PRESS))
     {
         play_button_selected = !play_button_selected;
     }
 }
 
-
-//creates a rectangle whose bottom left position is given. if selected is true, also draws an outline
-void make_rectangle(const float left, const float bottom, const bool selected)
+//create vertex and fragment shader based on provided shader code
+void create_shader(unsigned int program, unsigned int shader_type, const char* shader_code)
 {
-    const float width = 0.6;
-    const float height = 0.25;
 
-    glBegin(GL_QUADS);
-        const float c = 1;
-        glColor3f(c,c,c);
-        glVertex2f(left,bottom);
-        glVertex2f(left+width,bottom);
-        glVertex2f(left+width,bottom+height);
-        glVertex2f(left,bottom+height);
-        
-    glEnd();
 
-    //draw outline of the rectangle too
-    if(selected)
+    //create shaders
+    unsigned int shader = glCreateShader(shader_type);
+
+    //specify shader source
+    glShaderSource(shader, 1, &shader_code, nullptr);
+
+    //compile shaders
+    glCompileShader(shader);
+
+    //error handle
+    int compile_ok;
+    glGetShaderiv(shader, GL_COMPILE_STATUS, &compile_ok);
+    if(compile_ok == GL_FALSE) //if error occurs
     {
-        GLfloat lineWidthRange[2] = {0.0f, 0.0f};
-        // glGetFloatv(GL_ALIASED_LINE_WIDTH_RANGE, lineWidthRange);
-        // std::cout << "max line width: " << lineWidthRange[0];
+        int errLength;
+        glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &errLength);
+        char* errMessage = new char[errLength];
+        glGetShaderInfoLog(shader, errLength, &errLength, errMessage);
+        std::cout << "Error compiling shader: " << errMessage << "\n";
 
-        glLineWidth(7);
-        glBegin(GL_LINES);
-            glColor3f(0,0.7,0);
-
-            //left side's line
-            glVertex2f(left, bottom);
-            glVertex2f(left, bottom+height);
-
-            //bottom side's line
-            glVertex2f(left, bottom);
-            glVertex2f(left+width, bottom);
-
-            //top side's line
-            glVertex2f(left, bottom+height);
-            glVertex2f(left+width, bottom+height);
-
-            //right side's line
-            glVertex2f(left+width, bottom);
-            glVertex2f(left+width, bottom+height);
-        glEnd();
+        //clean up
+        glDeleteShader(shader);
+        return;
     }
+
+    //attach shader to program
+    glAttachShader(program, shader);
+    glLinkProgram(program);
+    glValidateProgram(program);
+
+    //cleanup
+    glDeleteShader(shader);
+    glDetachShader(program, shader);
+
 }
 
 
 
-void main_menu_button(const std::string text, const bool selected)
-{
-    
-    if(text == "Play")
-    {
-        make_rectangle(-0.3, 0, selected);
-    } else if(text == "Quit")
-    {
-        make_rectangle(-0.3, -0.3, selected);
 
-    }
-}
+
 
 
 int main()
 {
 
+    // unsigned char* image = read_bmp("images/play_asperite.bmp");
 
     //set required opengl version
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
-    // glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     
     //Call error callback function to print errors when they happen
     glfwSetErrorCallback(&glfwErrorCallback);
@@ -113,78 +107,112 @@ int main()
         std::cerr << "GLFW was not initialized. \n";
         return -1;
     }
-
-
     constexpr int window_width = 800;
     constexpr int window_height = 600;
 	GLFWwindow* window = glfwCreateWindow(window_width, window_height, "Snake Evolution", NULL, NULL);
-	glfwMakeContextCurrent(window);
     if(!window)
 	{
 		glfwTerminate();
         std::cerr << "Window was not created. \n";
 		return -1;
 	}
+	glfwMakeContextCurrent(window);
+
+    glfwSwapInterval(1); //set frame rate to refresh rate
 
     //Key callback for reading user inputs
     glfwSetKeyCallback(window, keyCallback);
-    
-    // std::cout << "GL version: " << glGetString(GL_VERSION) << std::endl;
-    // std::cout << "GL vendor : " << glGetString(GL_VENDOR  ) << std::endl;
-    // std::cout << "GL renderer: " << glGetString(GL_RENDERER ) << std::endl;
-    // std::cout << "GLSL version: " << glGetString(GL_SHADING_LANGUAGE_VERSION  ) << std::endl;
-
-
-    // int width, height;
-    // glfwGetFramebufferSize(window, &width, &height);
-    // glViewport(0, 0, width, height);
 
     //Don't allow user to resize window
     glfwSetWindowAttrib(window, GLFW_RESIZABLE, false); 
+    
+    //initialize glew
+    if(glewInit() != GLEW_OK)
+    {
+        std::cout << "Glew was not initialized.\n";
+        return -1;
+    }
+
+    // print_gl_version();
+    
+    //vertex buffer
+    unsigned int buffer1;
+    glGenBuffers(1, &buffer1);
+
+    glBindBuffer(GL_ARRAY_BUFFER, buffer1); //select buffer
+
+    //put data in buffer
+    float left = -0.3;
+    float bottom = 0;
+    float width = 0.6;
+    float height = 0.3;
+    float vertices[8] = {
+        left, bottom,
+        left+width,bottom,
+        left+width,bottom+height,
+        left,bottom+height
+    };
+    glBufferData(GL_ARRAY_BUFFER, 8 * sizeof(float), vertices, GL_STATIC_DRAW);
+    glBindBuffer(GL_ARRAY_BUFFER, buffer1);
+
+    //specify data layout
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 2*sizeof(float), 0);//call once per attribute
+    glEnableVertexAttribArray(0);
+
+    //vertex shader
+    std::string vs_code = 
+        "#version 120\n"
+        "void main() {\n"
+        "   gl_Position =  gl_ModelViewProjectionMatrix * gl_Vertex;\n"
+        "}"
+        ;
+
+    std::string frg_code = 
+        "#version 120\n"
+        "uniform vec4 u_color;\n"
+        "void main() {\n"
+            // "gl_FragColor = vec4(0.7, 0.99, 0.7, 1);\n"
+            "gl_FragColor = u_color;\n"
+        "}"
+        ;
+
+    //create program
+    unsigned int program = glCreateProgram();
+
+    create_shader(program, GL_VERTEX_SHADER, vs_code.c_str());
+    create_shader(program, GL_FRAGMENT_SHADER, frg_code.c_str());
+    glUseProgram(program);
+
+    //set color
+    int u_color_location = glGetUniformLocation(program, "u_color"); //get location of u_color variable used in shader code
+    if(u_color_location == -1)
+    {
+        std::cout << "Couldn't find u_color. ";
+    }
+    glUniform4f(u_color_location, 0.7, 0.99, 0.7, 1.0);
+
 
     //running program
     while(!glfwWindowShouldClose(window))
     {
-        // glfwSetWindowShouldClose(window, true);    
+        //clear the window's content
         glClear(GL_COLOR_BUFFER_BIT);
-        float ratio;
-        int width, height;
-        glfwGetFramebufferSize(window, &width, &height);
-        // glViewport(0, 0, width, height);
-        // ratio = width / (float) height;
 
-        // glMatrixMode(GL_PROJECTION);
-        // glLoadIdentity();
-        // glOrtho(0.0f, width, height, 0.0f, 0.0f, 10.0f);
-        // glMatrixMode(GL_MODELVIEW);
-        // glOrtho(0, width, 0, height, -1, 1); //makes it so vertex coordinates are in pixel coordinates
+        glDrawArrays(GL_QUADS, 0, 4); //draw buffer
 
-        // glOrtho(-ratio, ratio, -1.f, 1.f, 1.f, -1.f);
 
-        // glClear(GL_COLOR_BUFFER_BIT);
-        // float ratio;
-        // int width, height;
-        // glfwGetFramebufferSize(window, &width, &height);
-        // ratio = width / (float) height;
-        // glViewport(0, 0, width, height);
-        // glClear(GL_COLOR_BUFFER_BIT);
-        // glMatrixMode(GL_PROJECTION);
 
-        main_menu_button("Play", play_button_selected);
-        main_menu_button("Quit", !play_button_selected);
 
-        glfwSwapBuffers(window);
 
-        glfwPollEvents();
+
+
+        glfwSwapBuffers(window);//swap buffer
+        glfwPollEvents();//poll for events (such as quit)
     }
   
-    //destroy window
-    glfwDestroyWindow(window);
 
     //clean up
+    glfwDestroyWindow(window);
     glfwTerminate();
-
-
-
     return 0;
 }
