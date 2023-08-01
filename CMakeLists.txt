@@ -18,3 +18,7 @@ add_executable(test_opengl test_opengl.cpp)
 target_link_libraries(test_opengl glfw)
 target_link_libraries(test_opengl GL)
 
+add_executable(test_opengl2 test_opengl2.cpp)
+target_link_libraries(test_opengl2 glfw)
+target_link_libraries(test_opengl2 GL)
+
