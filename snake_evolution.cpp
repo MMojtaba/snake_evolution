@@ -1,13 +1,21 @@
 #include <iostream>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
-// #include <GL/glx.h>
 #include <string>
 #include <fstream>
 
 #define STB_IMAGE_IMPLEMENTATION //TODO remove
 #include "stb_image.h"
 
+void ce()
+{
+    GLenum err;
+    while((err = glGetError()) != GL_NO_ERROR)
+    {
+        std::cout << "Error: " << err << std::endl; 
+        assert(false);
+    }
+}
 
 void print_gl_version()
 {
@@ -18,9 +26,7 @@ void print_gl_version()
     int numTexUnits;
     glGetIntegerv(GL_MAX_TEXTURE_UNITS, &numTexUnits);
     std::cout << "Texture Units: " << numTexUnits  << std::endl;
-
 }
-
 
 static bool play_button_selected = true;
 
@@ -34,8 +40,6 @@ static void glfwErrorCallback(int id, const char* err)
 //Handle user inputs
 void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
-    // std::cout << "Key is: " << key << "\n"; 
-
     //escape key: close game
     if(key == GLFW_KEY_ESCAPE)
     {
@@ -49,57 +53,9 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
     }
 }
 
-//create vertex and fragment shader based on provided shader code
-void create_shader(unsigned int program, unsigned int shader_type, const char* shader_code)
-{
-
-
-    //create shaders
-    unsigned int shader = glCreateShader(shader_type);
-
-    //specify shader source
-    glShaderSource(shader, 1, &shader_code, nullptr);
-
-    //compile shaders
-    glCompileShader(shader);
-
-    //error handle
-    int compile_ok;
-    glGetShaderiv(shader, GL_COMPILE_STATUS, &compile_ok);
-    if(compile_ok == GL_FALSE) //if error occurs
-    {
-        int errLength;
-        glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &errLength);
-        char* errMessage = new char[errLength];
-        glGetShaderInfoLog(shader, errLength, &errLength, errMessage);
-        std::cout << "Error compiling shader: " << errMessage << std::endl;
-
-        //clean up
-        glDeleteShader(shader);
-        return;
-    }
-
-    //attach shader to program
-    glAttachShader(program, shader);
-    glLinkProgram(program);
-    glValidateProgram(program);
-
-    //cleanup
-    glDeleteShader(shader);
-    glDetachShader(program, shader);
-
-}
-
-
-
-
-
-
 
 int main()
 {
-
-    // unsigned char* image = read_bmp("images/play_asperite.bmp");
 
     //set required opengl version
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
@@ -120,8 +76,8 @@ int main()
 	GLFWwindow* window = glfwCreateWindow(window_width, window_height, "Snake Evolution", NULL, NULL);
     if(!window)
 	{
-		glfwTerminate();
         std::cerr << "Window was not created. \n";
+		glfwTerminate();
 		return -1;
 	}
 	glfwMakeContextCurrent(window);
@@ -140,49 +96,144 @@ int main()
         std::cout << "Glew was not initialized." << std::endl;
         return -1;
     }
-    // print_gl_version();
-    
-    //vertex array object
-    // unsigned int vertex_array;
-    // glGenVertexArrays(1, &vertex_array);
-    // glBindVertexArray(vertex_array);
-
     
 
-    //put data in buffer
+
+    //shaders for play button
+    std::string vs_code = 
+        "#version 120\n"
+        "attribute vec2 aPos;\n"
+        "attribute vec2 aTexCoord;\n"
+        "varying vec2 TexCoord;\n"
+        "void main() {\n"
+            // "gl_Position =  gl_ModelViewProjectionMatrix * vec4(aPos, 1.0);\n"
+            "gl_Position =  gl_ModelViewProjectionMatrix * gl_Vertex;\n"
+            // "gl_Position = vec4(aPos, 1.0);\n"
+            "TexCoord = vec2(aTexCoord.x, aTexCoord.y);\n"
+        "}"
+        ;
+    const char* vs_code_char = vs_code.c_str();
+
+    std::string fs_code = 
+        "#version 120\n"
+        "varying vec2 TexCoord;\n"
+        "uniform sampler2D texture;\n"
+        "void main() {\n"
+            "gl_FragColor = texture2D(texture, TexCoord);\n"
+        "}"
+        ;
+    const char* fs_code_char = fs_code.c_str();
+
+
+    //create program
+    unsigned int program = glCreateProgram();
+
+    //create shaders
+    unsigned int shader_v = glCreateShader(GL_VERTEX_SHADER);
+    unsigned int shader_f = glCreateShader(GL_FRAGMENT_SHADER);
+    
+
+    //specify shader source
+    glShaderSource(shader_v, 1, &vs_code_char, NULL);
+    glCompileShader(shader_v);
+
+    glShaderSource(shader_f, 1, &fs_code_char, NULL);
+    glCompileShader(shader_f);
+
+    //error handle
+    int compile_ok_v;
+    int compile_ok_f;
+    glGetShaderiv(shader_v, GL_COMPILE_STATUS, &compile_ok_v);
+    glGetShaderiv(shader_f, GL_COMPILE_STATUS, &compile_ok_f);
+    if(compile_ok_v == GL_FALSE) //if error occurs
+    {
+        int errLength;
+        glGetShaderiv(shader_v, GL_INFO_LOG_LENGTH, &errLength);
+        char* errMessage = new char[errLength];
+        glGetShaderInfoLog(shader_v, errLength, &errLength, errMessage);
+        std::cout << "Error compiling shader: " << errMessage << std::endl;
+
+        //clean up
+        glDeleteShader(shader_v);
+        glDeleteShader(shader_f);
+        return 0;
+    }
+    if(compile_ok_f == GL_FALSE) //if error occurs
+    {
+        int errLength;
+        glGetShaderiv(shader_f, GL_INFO_LOG_LENGTH, &errLength);
+        char* errMessage = new char[errLength];
+        glGetShaderInfoLog(shader_v, errLength, &errLength, errMessage);
+        std::cout << "Error compiling frag shader: " << errMessage << std::endl;
+
+        //clean up
+        glDeleteShader(shader_v);
+        glDeleteShader(shader_f);
+        return 0;
+    }
+
+    glBindAttribLocation(program, 0, "aPos");
+    // glBindAttribLocation(program, 1, "aColor");
+    glBindAttribLocation(program, 1, "aTexCoord");
+
+    //attach shader to program
+    glAttachShader(program, shader_v);
+    glAttachShader(program, shader_f);
+
+
+    glLinkProgram(program);
+    glValidateProgram(program);
+
+    int program_ok;
+    glGetProgramiv(program, GL_LINK_STATUS, &program_ok);
+    char* program_err_log = new char[512];
+    if(!program_ok) {
+        glGetProgramInfoLog(program, 512, NULL, program_err_log);
+        std::cout << "Error linking program: " << program_err_log << std::endl;
+    }
+
+    //cleanup
+    glDeleteShader(shader_v);
+    glDeleteShader(shader_f);
+
+//position of vertices
     float left = -0.3f;
     float bottom = 0.0f;
     float width = 0.6f;
     float height = 0.3f;
-    float vertices[8+8] = {
-        left, bottom, 0.0f, 0.0f,
-        left+width,bottom, 1.0f, 0.0f, 
-        left+width,bottom+height, 1.0f, 1.0f, 
-        left,bottom+height, 0.0f, 1.0f
+
+    float vertices[] = {
+        //positions                 texture coordinates
+        left, bottom,                0.0f, 0.0f, //bottom left
+        left+width,bottom,           1.0f, 0.0f, //bottom right
+        left+width,bottom+height,    1.0f, 1.0f, //top right
+        left,bottom+height,          0.0f, 1.0f //top left
     };
-    // unsigned int indices[] = {0, 1, 2, 3};
-    //vertex buffer
+
+    //create buffer to store vertices
     unsigned int vertex_buffer;
     glGenBuffers(1, &vertex_buffer);
-    glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer); //select buffer
-    glBufferData(GL_ARRAY_BUFFER, 4*2 * sizeof(float), vertices, GL_STATIC_DRAW);
-
+    glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer); //set buffer as current one
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW); //add data to buffer
 
     //position of vertices attribute (vertex data layout)
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4*sizeof(float), (void*)(0*sizeof(float)));//call once per attribute
-    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 2, //number of positions
+        GL_FLOAT, GL_FALSE, 4*sizeof(float), //size of each vertex
+        0); //where positions start
+    glEnableVertexAttribArray(0); 
 
-    //texture coordinate attributes (texture coordinates data layout)
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4*sizeof(float), (void*)(2*sizeof(float)));//call once per attribute
+    //texture coordinate attributes
+    glVertexAttribPointer(1, 2, //number of coordinates for a texture coordinate
+        GL_FLOAT, GL_FALSE, 4*sizeof(float), //size of each vertex
+        (void*)(2*sizeof(float)));//where texture coordinate starts
     glEnableVertexAttribArray(1);
-    
 
-    //add play button texture-------------------------------------------
-    // glGenTextures(1, );
 
+    //load image
     int imWidth, imHeight, imChannels;
-    // stbi_set_flip_vertically_on_load(1);
-    unsigned char* image = stbi_load("./images/play_asperite.png", &imWidth, &imHeight, &imChannels, 4);
+    stbi_set_flip_vertically_on_load(1);
+
+    unsigned char* image = stbi_load("./images/play.png", &imWidth, &imHeight, &imChannels, 4);
     if(!image)
     {
         std::cout << "could not load image" << std::endl;
@@ -190,120 +241,68 @@ int main()
     }
     std::cout << "Image dimensions: " <<  imWidth << ", " << imHeight << std::endl;
 
+    //create texture object
     unsigned int texture;
-    // glEnable(GL_TEXTURE_2D);
-    // glActiveTexture(GL_TEXTURE0);
-    glGenTextures(1, &texture);
-    glBindTexture(GL_TEXTURE_2D, texture);
+    // glActiveTexture(GL_TEXTURE0); //activate texture slot 0
+    glGenTextures(1, &texture); 
+    glBindTexture(GL_TEXTURE_2D, texture); 
 
     //set texture parameters
-    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-    // glTexParameteri(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, GL_TRUE);
-    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
-    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, 0);
-
+    //set the image to the current texture slot
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, imWidth, imHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
-    // glGenerateMipmap(GL_TEXTURE_2D);
-    // glActiveTexture(GL_TEXTURE0);
-    // glBindTexture(GL_TEXTURE_2D, 0);
-    // glUniform1i(glGetUniformLocation(program, "tex"), 0);
-
-    stbi_image_free(image);
-
-    //vertex shader
-    // std::string vs_code = 
-    //     "#version 120\n"
-    //     // "attribute vec2 tex;\n"
-    //     "varying vec2 texCoord;\n"
-    //     // "varying vec2 out_tex;\n"
-    //     "void main() {\n"
-    //         // "gl_TexCoord[0] = gl_MultiTexCoord0;\n"
-    //         "gl_Position =  gl_ModelViewProjectionMatrix * gl_Vertex;\n"
-    //         // "gl_Position = ftransform();\n"
-    //         "texCoord = gl_MultiTexCoord0.xy;\n"
-    //     "}"
-    //     ;
-    std::string vs_code = 
-        "#version 120\n"
-        "void main() {\n"
-            "gl_Position =  gl_ModelViewProjectionMatrix * gl_Vertex;\n"
-        "}"
-        ;
-
-
-    // std::string frg_code = 
-    //     "#version 120\n"
-    //     "uniform vec4 u_color;\n"
-    //     "uniform sampler2D tex;\n"
-    //     "varying vec2 texCoord;\n"
-    //     "void main() {\n"
-    //         // "gl_FragColor = vec4(0.7, 0.99, 0.7, 1);\n"
-    //         "gl_FragColor = u_color;\n"
-    //         // "gl_FragColor = texture2D(tex, texCoord);\n"
-    //     "}"
-    //     ;
-    std::string frg_code = 
-        "#version 120\n"
-        "uniform sampler2D tex;\n"
-        "void main() {\n"
-            "gl_FragColor = texture2D(tex, gl_TexCoord[0].st);\n"
-        "}"
-        ;
-
-    //create program
-    unsigned int program = glCreateProgram();
-
-    create_shader(program, GL_VERTEX_SHADER, vs_code.c_str());
-    create_shader(program, GL_FRAGMENT_SHADER, frg_code.c_str());
-    glUseProgram(program);
+    glGenerateMipmap(GL_TEXTURE_2D);
 
     //
-    glUniform1i(glGetUniformLocation(program, "tex"), 0);
+    // // glUniform1i(glGetUniformLocation(program, "tex"), 0);
+    // glBindAttribLocation(program, 0, "position");
+    // glBindAttribLocation(program, 1, "texCoord");
 
+    // //position of vertices attribute (vertex data layout)
+    // glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4*sizeof(float), (void*)(0*sizeof(float)));//call once per attribute
+    // glEnableVertexAttribArray(0);
 
+    // //texture coordinate attributes (texture coordinates data layout)
+    // glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4*sizeof(float), (void*)(2*sizeof(float)));//call once per attribute
+    // glEnableVertexAttribArray(1);
+
+    // create_shader(program, GL_VERTEX_SHADER, vs_code.c_str());
+    // create_shader(program, GL_FRAGMENT_SHADER, frg_code.c_str());
+    // glUseProgram(program);
+
+    
+
+    // glUniform1i(glGetUniformLocation(program, "tex"), 0);
 
     //set uniform color for shader
-    int u_color_location = glGetUniformLocation(program, "u_color"); //get location of u_color variable used in shader code
-    if(u_color_location == -1)
-    {
-        // std::cout << "Couldn't find u_color. " << std::endl;
-    }
-    glUniform4f(u_color_location, 0.7, 1.0, 0.7, 1.0); //st u_color value
+    // int u_color_location = glGetUniformLocation(program, "u_color"); //get location of u_color variable used in shader code
+    // if(u_color_location == -1)
+    // {
+    //     // std::cout << "Couldn't find u_color. " << std::endl;
+    // }
+    // glUniform4f(u_color_location, 0.7, 1.0, 0.7, 1.0); //st u_color value
 
 
     
 
     
+    ce();
 
     //running program
     while(!glfwWindowShouldClose(window))
     {
         //clear the window's content
-
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        // glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, texture);
-        
-        // glBindVertexArray(vertex_array);
         glUseProgram(program);
-        // glBindVertexArray(vertex_array);
-        
 
-        glDrawArrays(GL_QUADS, 2, 4); //draw buffer
-        // glDrawElements(GL_QUADS, 8, GL_UNSIGNED_INT, 0);
-        // glDrawElements(GL_QUADS, 4, GL_UNSIGNED_INT, 0);
-
+        glDrawArrays(GL_QUADS, 0, 4); //draw buffer
 
 
 
