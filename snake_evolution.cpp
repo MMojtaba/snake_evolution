@@ -4,6 +4,7 @@
 #include <string>
 #include <fstream>
 #include "shader_code.hpp"
+#include "program.hpp"
 
 #define STB_IMAGE_IMPLEMENTATION //TODO remove
 #include "stb_image.h"
@@ -28,80 +29,19 @@ int main()
     
     //get shader code
     ShaderCode shaderCode;
-    const char* vs_code_char = shaderCode.get_play_vertex();
-    const char* fs_code_char = shaderCode.get_play_frag();
+    const char* vs_code = shaderCode.get_play_vertex();
+    const char* fs_code = shaderCode.get_play_frag();
 
+    //create program and create shaders
+    Program program;
+    program.create_shaders(vs_code, fs_code);
 
-    //create program
-    unsigned int program = glCreateProgram();
-
-    //create shaders
-    unsigned int shader_v = glCreateShader(GL_VERTEX_SHADER);
-    unsigned int shader_f = glCreateShader(GL_FRAGMENT_SHADER);
-    
-
-    //specify shader source
-    glShaderSource(shader_v, 1, &vs_code_char, NULL);
-    glShaderSource(shader_f, 1, &fs_code_char, NULL);
-
-    glCompileShader(shader_v);
-    glCompileShader(shader_f);
-
-    //error handle
-    int compile_ok_v;
-    int compile_ok_f;
-    glGetShaderiv(shader_v, GL_COMPILE_STATUS, &compile_ok_v);
-    glGetShaderiv(shader_f, GL_COMPILE_STATUS, &compile_ok_f);
-    if(compile_ok_v == GL_FALSE) //if error occurs
-    {
-        int errLength;
-        glGetShaderiv(shader_v, GL_INFO_LOG_LENGTH, &errLength);
-        char* errMessage = new char[errLength];
-        glGetShaderInfoLog(shader_v, errLength, &errLength, errMessage);
-        std::cout << "Error compiling shader: " << errMessage << std::endl;
-
-        //clean up
-        glDeleteShader(shader_v);
-        glDeleteShader(shader_f);
-        return 0;
-    }
-    if(compile_ok_f == GL_FALSE) //if error occurs
-    {
-        int errLength;
-        glGetShaderiv(shader_f, GL_INFO_LOG_LENGTH, &errLength);
-        char* errMessage = new char[errLength];
-        glGetShaderInfoLog(shader_v, errLength, &errLength, errMessage);
-        std::cout << "Error compiling frag shader: " << errMessage << std::endl;
-
-        //clean up
-        glDeleteShader(shader_v);
-        glDeleteShader(shader_f);
-        return 0;
-    }
-
-    glBindAttribLocation(program, 0, "aPos");
-    // glBindAttribLocation(program, 1, "aColor");
-    glBindAttribLocation(program, 1, "aTexCoord");
+    //Add attributes for position and textexure coordinates to be used by shaders
+    glBindAttribLocation(program.id(), 0, "aPos");
+    glBindAttribLocation(program.id(), 1, "aTexCoord");
 
     //attach shader to program
-    glAttachShader(program, shader_v);
-    glAttachShader(program, shader_f);
-
-
-    glLinkProgram(program);
-    glValidateProgram(program);
-
-    int program_ok;
-    glGetProgramiv(program, GL_LINK_STATUS, &program_ok);
-    char* program_err_log = new char[512];
-    if(!program_ok) {
-        glGetProgramInfoLog(program, 512, NULL, program_err_log);
-        std::cout << "Error linking program: " << program_err_log << std::endl;
-    }
-
-    //cleanup
-    glDeleteShader(shader_v);
-    glDeleteShader(shader_f);
+    program.attach_shaders();
 
     //position of vertices
     float left = -0.2f;
@@ -197,8 +137,8 @@ int main()
 
 
 
-    glUseProgram(program);
-    glUniform1i(glGetUniformLocation(program, "uPlaySelected"), 1);
+    glUseProgram(program.id());
+    glUniform1i(glGetUniformLocation(program.id(), "uPlaySelected"), 1);
     
     
     ce();
@@ -211,7 +151,7 @@ int main()
         glClear(GL_COLOR_BUFFER_BIT);
 
         //activate texture and shaders
-        glUseProgram(program);
+        glUseProgram(program.id());
 
         //draw play ---------------------------
         glActiveTexture(GL_TEXTURE0); //activate texture slot
@@ -220,12 +160,12 @@ int main()
         //highlight play button if selected
         if(play_button_selected)
         {
-            glUniform1i(glGetUniformLocation(program, "uPlaySelected"), 1);
+            glUniform1i(glGetUniformLocation(program.id(), "uPlaySelected"), 1);
 
         }else{
-            glUniform1i(glGetUniformLocation(program, "uPlaySelected"), 0);
+            glUniform1i(glGetUniformLocation(program.id(), "uPlaySelected"), 0);
         }
-        glUniform1i(glGetUniformLocation(program, "texture"), 0);
+        glUniform1i(glGetUniformLocation(program.id(), "texture"), 0);
         glDrawArrays(GL_QUADS, 0, 4); //draw buffer
 
 
@@ -237,12 +177,12 @@ int main()
         //highlight quit button if selected
         if(!play_button_selected)
         {
-            glUniform1i(glGetUniformLocation(program, "uPlaySelected"), 1);
+            glUniform1i(glGetUniformLocation(program.id(), "uPlaySelected"), 1);
 
         }else{
-            glUniform1i(glGetUniformLocation(program, "uPlaySelected"), 0);
+            glUniform1i(glGetUniformLocation(program.id(), "uPlaySelected"), 0);
         }
-        glUniform1i(glGetUniformLocation(program, "texture"), 1);
+        glUniform1i(glGetUniformLocation(program.id(), "texture"), 1);
 
         glDrawArrays(GL_QUADS, 4, 4); //draw buffer
 
@@ -257,6 +197,20 @@ int main()
     glfwTerminate();
     return 0;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 //End of main ---------------------------------------------------------------------------------
 
