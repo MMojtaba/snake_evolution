@@ -3,132 +3,33 @@
 #include <GLFW/glfw3.h>
 #include <string>
 #include <fstream>
+#include "shader_code.hpp"
 
 #define STB_IMAGE_IMPLEMENTATION //TODO remove
 #include "stb_image.h"
 
-void ce()
-{
-    GLenum err;
-    while((err = glGetError()) != GL_NO_ERROR)
-    {
-        std::cout << "Error: " << err << std::endl; 
-        assert(false);
-    }
-}
 
-void print_gl_version()
-{
-    std::cout << "GL version: " << glGetString(GL_VERSION) << std::endl;
-    std::cout << "GL vendor : " << glGetString(GL_VENDOR  ) << std::endl;
-    std::cout << "GL renderer: " << glGetString(GL_RENDERER ) << std::endl;
-    std::cout << "GLSL version: " << glGetString(GL_SHADING_LANGUAGE_VERSION  ) << std::endl;
-    int numTexUnits;
-    glGetIntegerv(GL_MAX_TEXTURE_UNITS, &numTexUnits);
-    std::cout << "Texture Units: " << numTexUnits  << std::endl;
-}
-
-static bool play_button_selected = true;
-
-//for printing errors
-static void glfwErrorCallback(int id, const char* err)
-{
-  std::cerr << err <<"\n";
-}
+//Function declarations. see their definition for description of function.
+void ce();
+void print_gl_version();
+static void glfwErrorCallback(int, const char*);
+void keyCallback(GLFWwindow*, int, int, int, int);
+GLFWwindow* init();
 
 
-//Handle user inputs
-void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
-{
-    //escape key: close game
-    if(key == GLFW_KEY_ESCAPE)
-    {
-        glfwSetWindowShouldClose(window, true);   
-    }
-
-    //up and down switches the selected button in the main menu
-    if((key == GLFW_KEY_UP && action == GLFW_PRESS) || (key == GLFW_KEY_DOWN && action == GLFW_PRESS))
-    {
-        play_button_selected = !play_button_selected;
-    }
-}
+//Global variables
+bool play_button_selected = true;
 
 
 int main()
 {
-
-    //set required opengl version
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_COMPAT_PROFILE);
+    //initialize things such as glfw and glew and create a window
+    GLFWwindow* window = init();
     
-    //Call error callback function to print errors when they happen
-    glfwSetErrorCallback(&glfwErrorCallback);
-
-    //create window
-	if(!glfwInit()) 
-    {
-        std::cerr << "GLFW was not initialized. \n";
-        return -1;
-    }
-    constexpr int window_width = 800;
-    constexpr int window_height = 600;
-	GLFWwindow* window = glfwCreateWindow(window_width, window_height, "Snake Evolution", NULL, NULL);
-    if(!window)
-	{
-        std::cerr << "Window was not created. \n";
-		glfwTerminate();
-		return -1;
-	}
-	glfwMakeContextCurrent(window);
-
-    glfwSwapInterval(1); //set frame rate to refresh rate
-
-    //Key callback for reading user inputs
-    glfwSetKeyCallback(window, keyCallback);
-
-    //Don't allow user to resize window
-    glfwSetWindowAttrib(window, GLFW_RESIZABLE, false); 
-    
-    //initialize glew
-    if(glewInit() != GLEW_OK)
-    {
-        std::cout << "Glew was not initialized." << std::endl;
-        return -1;
-    }
-    
-
-
-    //shaders for play button
-    std::string vs_code = 
-        "#version 120\n"
-        "attribute vec2 aPos;\n"
-        "attribute vec2 aTexCoord;\n"
-        "varying vec2 TexCoord;\n"
-        "void main() {\n"
-            // "gl_Position =  gl_ModelViewProjectionMatrix * vec4(aPos, 1.0);\n"
-            // "gl_Position =  gl_ModelViewProjectionMatrix * gl_Vertex;\n"
-            "gl_Position = vec4(aPos, 1.0, 1.0);\n"
-            "TexCoord = vec2(aTexCoord.x, aTexCoord.y);\n"
-        "}"
-        ;
-    const char* vs_code_char = vs_code.c_str();
-
-    std::string fs_code = 
-        "#version 120\n"
-        "varying vec2 TexCoord;\n"
-        "uniform sampler2D texture;\n"
-        "uniform int uPlaySelected;\n"
-        "void main() {\n"
-            "vec4 color = texture2D(texture, TexCoord);\n"
-            "if(uPlaySelected == 0 || TexCoord.x < 0.95 && TexCoord.x > 0.04 && TexCoord.y < 0.95 && TexCoord.y > 0.04){\n"
-                "gl_FragColor = color;\n"
-            "}else {\n"
-                "gl_FragColor = vec4(0.0,1.0,0.0,1.0);\n"
-            "}\n"
-        "}"
-        ;
-    const char* fs_code_char = fs_code.c_str();
+    //get shader code
+    ShaderCode shaderCode;
+    const char* vs_code_char = shaderCode.get_play_vertex();
+    const char* fs_code_char = shaderCode.get_play_frag();
 
 
     //create program
@@ -141,9 +42,9 @@ int main()
 
     //specify shader source
     glShaderSource(shader_v, 1, &vs_code_char, NULL);
-    glCompileShader(shader_v);
-
     glShaderSource(shader_f, 1, &fs_code_char, NULL);
+
+    glCompileShader(shader_v);
     glCompileShader(shader_f);
 
     //error handle
@@ -202,18 +103,28 @@ int main()
     glDeleteShader(shader_v);
     glDeleteShader(shader_f);
 
-//position of vertices
+    //position of vertices
     float left = -0.2f;
     float bottom = 0.0f;
     float width = 0.4f;
     float height = 0.2f;
 
+    float left_quit = -0.2f;
+    float bottom_quit = -0.25f;
+
     float vertices[] = {
+        //play button
         //positions                 texture coordinates
         left, bottom,                0.0f, 0.0f, //bottom left
         left+width,bottom,           1.0f, 0.0f, //bottom right
         left+width,bottom+height,    1.0f, 1.0f, //top right
-        left,bottom+height,          0.0f, 1.0f //top left
+        left,bottom+height,          0.0f, 1.0f, //top left
+        //quit button
+        //positions                 texture coordinates
+        left_quit, bottom_quit,                0.0f, 0.0f, //bottom left
+        left_quit+width,bottom_quit,           1.0f, 0.0f, //bottomright
+        left_quit+width,bottom_quit+height,    1.0f, 1.0f, //top right
+        left_quit,bottom_quit+height,          0.0f, 1.0f //top left
     };
 
     //create buffer to store vertices
@@ -235,23 +146,28 @@ int main()
     glEnableVertexAttribArray(1);
 
 
-    //load image
+    //load images
     int imWidth, imHeight, imChannels;
     stbi_set_flip_vertically_on_load(1);
 
-    unsigned char* image = stbi_load("./images/play.png", &imWidth, &imHeight, &imChannels, 4);
-    if(!image)
+    unsigned char* image_play = stbi_load("./images/play.png", &imWidth, &imHeight, &imChannels, 4);
+    if(!image_play)
     {
-        std::cout << "could not load image" << std::endl;
+        std::cout << "could not load play image" << std::endl;
         return -1;
     }
-    std::cout << "Image dimensions: " <<  imWidth << ", " << imHeight << std::endl;
+    unsigned char* image_quit = stbi_load("./images/quit.png", &imWidth, &imHeight, &imChannels, 4);
+    if(!image_quit)
+    {
+        std::cout << "could not load quit image" << std::endl;
+        return -1;
+    }
 
-    //create texture object
-    unsigned int texture;
-    // glActiveTexture(GL_TEXTURE0); //activate texture slot 0
-    glGenTextures(1, &texture); 
-    glBindTexture(GL_TEXTURE_2D, texture); 
+    //create play texture
+    unsigned int texture_play;
+    glActiveTexture(GL_TEXTURE0); //activate texture slot
+    glGenTextures(1, &texture_play); 
+    glBindTexture(GL_TEXTURE_2D, texture_play); 
 
     //set texture parameters
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -260,42 +176,30 @@ int main()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
     //set the image to the current texture slot
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, imWidth, imHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
-    glGenerateMipmap(GL_TEXTURE_2D);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, imWidth, imHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, image_play);
+    // glGenerateMipmap(GL_TEXTURE_2D);
 
-    //
-    // glBindAttribLocation(program, 0, "position");
-    // glBindAttribLocation(program, 1, "texCoord");
+    //create quit texture
+    glActiveTexture(GL_TEXTURE1); //activate texture slot
+    unsigned int texture_quit;
+    glGenTextures(1, &texture_quit); 
+    glBindTexture(GL_TEXTURE_2D, texture_quit); 
 
-    // //position of vertices attribute (vertex data layout)
-    // glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4*sizeof(float), (void*)(0*sizeof(float)));//call once per attribute
-    // glEnableVertexAttribArray(0);
+    //set texture parameters
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 
-    // //texture coordinate attributes (texture coordinates data layout)
-    // glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4*sizeof(float), (void*)(2*sizeof(float)));//call once per attribute
-    // glEnableVertexAttribArray(1);
+    //set the image to the current texture slot
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, imWidth, imHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, image_quit);
+    // glGenerateMipmap(GL_TEXTURE_2D);
 
-    // create_shader(program, GL_VERTEX_SHADER, vs_code.c_str());
-    // create_shader(program, GL_FRAGMENT_SHADER, frg_code.c_str());
-    // glUseProgram(program);
-
-    
-
-    // glUniform1i(glGetUniformLocation(program, "tex"), 0);
-
-    //set uniform color for shader
-    // int u_color_location = glGetUniformLocation(program, "u_color"); //get location of u_color variable used in shader code
-    // if(u_color_location == -1)
-    // {
-    //     // std::cout << "Couldn't find u_color. " << std::endl;
-    // }
-    // glUniform4f(u_color_location, 0.7, 1.0, 0.7, 1.0); //st u_color value
 
 
     glUseProgram(program);
     glUniform1i(glGetUniformLocation(program, "uPlaySelected"), 1);
     
-
     
     ce();
 
@@ -303,12 +207,17 @@ int main()
     while(!glfwWindowShouldClose(window))
     {
         //clear the window's content
-        glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+        glClearColor(0.0f, 0.1f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        glBindTexture(GL_TEXTURE_2D, texture);
+        //activate texture and shaders
         glUseProgram(program);
 
+        //draw play ---------------------------
+        glActiveTexture(GL_TEXTURE0); //activate texture slot
+        glBindTexture(GL_TEXTURE_2D, texture_play);
+
+        //highlight play button if selected
         if(play_button_selected)
         {
             glUniform1i(glGetUniformLocation(program, "uPlaySelected"), 1);
@@ -316,11 +225,26 @@ int main()
         }else{
             glUniform1i(glGetUniformLocation(program, "uPlaySelected"), 0);
         }
-
+        glUniform1i(glGetUniformLocation(program, "texture"), 0);
         glDrawArrays(GL_QUADS, 0, 4); //draw buffer
 
 
+        //draw quit -----------------------------
+        glActiveTexture(GL_TEXTURE1); //activate texture slot
+        glBindTexture(GL_TEXTURE_2D, texture_quit);
+    
 
+        //highlight quit button if selected
+        if(!play_button_selected)
+        {
+            glUniform1i(glGetUniformLocation(program, "uPlaySelected"), 1);
+
+        }else{
+            glUniform1i(glGetUniformLocation(program, "uPlaySelected"), 0);
+        }
+        glUniform1i(glGetUniformLocation(program, "texture"), 1);
+
+        glDrawArrays(GL_QUADS, 4, 4); //draw buffer
 
 
         glfwSwapBuffers(window);//swap buffer
@@ -332,4 +256,97 @@ int main()
     glfwDestroyWindow(window);
     glfwTerminate();
     return 0;
+}
+
+//End of main ---------------------------------------------------------------------------------
+
+//if an error has occured, prints the error code and terminates program
+void ce()
+{
+    GLenum err;
+    while((err = glGetError()) != GL_NO_ERROR)
+    {
+        std::cout << "Error: " << err << std::endl; 
+        assert(false);
+    }
+}
+
+//prints opengl version information
+void print_gl_version()
+{
+    std::cout << "GL version: " << glGetString(GL_VERSION) << std::endl;
+    std::cout << "GL vendor : " << glGetString(GL_VENDOR  ) << std::endl;
+    std::cout << "GL renderer: " << glGetString(GL_RENDERER ) << std::endl;
+    std::cout << "GLSL version: " << glGetString(GL_SHADING_LANGUAGE_VERSION  ) << std::endl;
+    int numTexUnits;
+    glGetIntegerv(GL_MAX_TEXTURE_UNITS, &numTexUnits);
+    std::cout << "Texture Units: " << numTexUnits  << std::endl;
+}
+
+//handle glfw errors 
+static void glfwErrorCallback(int id, const char* err)
+{
+  std::cerr << err <<"\n";
+}
+
+//Handle user inputs
+void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
+{
+    //escape key: close game
+    if(key == GLFW_KEY_ESCAPE)
+    {
+        glfwSetWindowShouldClose(window, true);   
+    }
+
+    //up and down switches the selected button in the main menu
+    if((key == GLFW_KEY_UP && action == GLFW_PRESS) || (key == GLFW_KEY_DOWN && action == GLFW_PRESS))
+    {
+        play_button_selected = !play_button_selected;
+    }
+}
+
+//initializes the required components (glfw, glew)
+GLFWwindow* init()
+{
+    //set required opengl version
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_COMPAT_PROFILE);
+    
+    //Call error callback function to print errors when they happen
+    glfwSetErrorCallback(&glfwErrorCallback);
+
+    //create window
+	if(!glfwInit()) 
+    {
+        std::cerr << "GLFW was not initialized. \n";
+        exit(0);
+    }
+    constexpr int window_width = 800;
+    constexpr int window_height = 600;
+	GLFWwindow* window = glfwCreateWindow(window_width, window_height, "Snake Evolution", NULL, NULL);
+    if(!window)
+	{
+        std::cerr << "Window was not created. \n";
+		glfwTerminate();
+		exit(0);
+	}
+	glfwMakeContextCurrent(window);
+
+    glfwSwapInterval(1); //set frame rate to refresh rate
+
+    //Key callback for reading user inputs
+    glfwSetKeyCallback(window, keyCallback);
+
+    //Don't allow user to resize window
+    glfwSetWindowAttrib(window, GLFW_RESIZABLE, false); 
+    
+    //initialize glew
+    if(glewInit() != GLEW_OK)
+    {
+        std::cout << "Glew was not initialized." << std::endl;
+        exit(0);
+    }
+
+    return window;
 }
