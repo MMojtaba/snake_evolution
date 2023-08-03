@@ -107,8 +107,8 @@ int main()
         "varying vec2 TexCoord;\n"
         "void main() {\n"
             // "gl_Position =  gl_ModelViewProjectionMatrix * vec4(aPos, 1.0);\n"
-            "gl_Position =  gl_ModelViewProjectionMatrix * gl_Vertex;\n"
-            // "gl_Position = vec4(aPos, 1.0);\n"
+            // "gl_Position =  gl_ModelViewProjectionMatrix * gl_Vertex;\n"
+            "gl_Position = vec4(aPos, 1.0, 1.0);\n"
             "TexCoord = vec2(aTexCoord.x, aTexCoord.y);\n"
         "}"
         ;
@@ -118,8 +118,14 @@ int main()
         "#version 120\n"
         "varying vec2 TexCoord;\n"
         "uniform sampler2D texture;\n"
+        "uniform int uPlaySelected;\n"
         "void main() {\n"
-            "gl_FragColor = texture2D(texture, TexCoord);\n"
+            "vec4 color = texture2D(texture, TexCoord);\n"
+            "if(uPlaySelected == 0 || TexCoord.x < 0.95 && TexCoord.x > 0.04 && TexCoord.y < 0.95 && TexCoord.y > 0.04){\n"
+                "gl_FragColor = color;\n"
+            "}else {\n"
+                "gl_FragColor = vec4(0.0,1.0,0.0,1.0);\n"
+            "}\n"
         "}"
         ;
     const char* fs_code_char = fs_code.c_str();
@@ -197,10 +203,10 @@ int main()
     glDeleteShader(shader_f);
 
 //position of vertices
-    float left = -0.3f;
+    float left = -0.2f;
     float bottom = 0.0f;
-    float width = 0.6f;
-    float height = 0.3f;
+    float width = 0.4f;
+    float height = 0.2f;
 
     float vertices[] = {
         //positions                 texture coordinates
@@ -258,7 +264,6 @@ int main()
     glGenerateMipmap(GL_TEXTURE_2D);
 
     //
-    // // glUniform1i(glGetUniformLocation(program, "tex"), 0);
     // glBindAttribLocation(program, 0, "position");
     // glBindAttribLocation(program, 1, "texCoord");
 
@@ -287,6 +292,8 @@ int main()
     // glUniform4f(u_color_location, 0.7, 1.0, 0.7, 1.0); //st u_color value
 
 
+    glUseProgram(program);
+    glUniform1i(glGetUniformLocation(program, "uPlaySelected"), 1);
     
 
     
@@ -301,6 +308,14 @@ int main()
 
         glBindTexture(GL_TEXTURE_2D, texture);
         glUseProgram(program);
+
+        if(play_button_selected)
+        {
+            glUniform1i(glGetUniformLocation(program, "uPlaySelected"), 1);
+
+        }else{
+            glUniform1i(glGetUniformLocation(program, "uPlaySelected"), 0);
+        }
 
         glDrawArrays(GL_QUADS, 0, 4); //draw buffer
 
