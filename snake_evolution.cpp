@@ -3,6 +3,7 @@
 #include <GLFW/glfw3.h>
 #include <string>
 #include <fstream>
+// #include <stdint.h>
 #include "shader_code.hpp"
 #include "program.hpp"
 
@@ -19,7 +20,11 @@ GLFWwindow* init();
 void set_texture_param();
 void draw_mm_buttons(unsigned int);
 void clear_window();
-
+const char* load_image0(std::string);
+unsigned char* load_image2(std::string name);
+const char* load_image3(std::string name);
+unsigned char* load_image(std::string name);
+unsigned char* create_image();
 
 
 
@@ -100,19 +105,36 @@ int main()
     int imWidth, imHeight, imChannels;
     stbi_set_flip_vertically_on_load(1);
 
-    unsigned char* image_play = stbi_load("./images/play.png", &imWidth, &imHeight, &imChannels, 4);
-    if(!image_play)
-    {
-        std::cout << "could not load play image" << std::endl;
-        return -1;
-    }
-    unsigned char* image_quit = stbi_load("./images/quit.png", &imWidth, &imHeight, &imChannels, 4);
-    if(!image_quit)
-    {
-        std::cout << "could not load quit image" << std::endl;
-        return -1;
-    }
+    // int size;
+    // uint8_t* image_play_int = load_image(size);
+    unsigned char* image_play = load_image("./images/play.bmp");
+    // unsigned char* image_play = create_image();
 
+    // unsigned char* image_play = stbi_load("./images/play.png", &imWidth, &imHeight, &imChannels, 0);
+    // if(!image_play)
+    // {
+    //     std::cout << "could not load play image" << std::endl;
+    //     return -1;
+    // }
+    unsigned char* image_quit = stbi_load("./images/quit.png", &imWidth, &imHeight, &imChannels, 4);
+    // unsigned char* image_quit = load_image("./images/quit.bmp");
+    
+    // if(!image_quit)
+    // {
+    //     std::cout << "could not load quit image" << std::endl;
+    //     return -1;
+    // }
+
+    std::cout << "size: " << imWidth << ", " << imHeight<< std::endl;
+    // std::cout << image_quit;
+    // for(int i = 0; i < imWidth*imHeight*4; ++i)
+    // {
+    //     // if(image_play[i] == '\0') break;
+        
+    //     image_play[i] = (unsigned char)(image_play_int[i]);
+    //     // std::cout <<  +(image_quit[i]) << "," <<  +(image_quit[i+1]) << "," <<  +(image_quit[i+2]) << ","<<  +(image_quit[i+3]) << ",";
+    // }
+    // return 0;
 
     //create play texture
     unsigned int texture_play;
@@ -327,4 +349,172 @@ void clear_window()
 {
     glClearColor(0.0f, 0.1f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);
+}
+
+
+//loads the bmp image with the given name
+const char* load_image0(std::string name)
+{
+     char R;
+     char G;
+     char B;
+    std::string output;
+
+    std::ifstream image(name, std::ios_base::binary);
+
+    unsigned char header[14];
+    unsigned char header2[40];
+
+    image.read(reinterpret_cast<char*>(&header), sizeof(header));
+    image.read(reinterpret_cast<char*>(&header2), sizeof(header2));
+
+
+    // while(image.read(reinterpret_cast<char*>(&B), sizeof(B)) &&  image.read(reinterpret_cast<char*>(&G), sizeof(G)) && image.read(reinterpret_cast<char*>(&R), sizeof(R)))
+    while(image.read(reinterpret_cast<char*>(&R), sizeof(R)) &&  image.read(reinterpret_cast<char*>(&G), sizeof(G)) && image.read(reinterpret_cast<char*>(&B), sizeof(B)))
+    
+    // while(image.read(&B, sizeof(B)), image.read(&R, sizeof(R)),image.read(&G, sizeof(G)))
+    // while(image.get(B) && image.get(G) && image.get(R))
+    {
+        output.push_back(R);
+
+        output.push_back(G);
+        output.push_back(B);
+
+        // image.read(reinterpret_cast<char*>(&B), sizeof(B));
+        // output.push_back(B);
+        // output.push_back((unsigned char)1);
+
+    }
+
+    const char* output_char = output.c_str();
+    return output_char;
+}
+
+
+// #include <stdio.h>
+unsigned char* load_image2(std::string name)
+{
+    FILE* file = fopen( name.c_str(), "rb" );
+
+    if ( file == NULL ) return 0;
+    int width = 800;
+    int height = 600;
+    unsigned char* data = (unsigned char *)malloc( width * height * 3);
+    //int size = fseek(file,);
+    fread( data, width * height * 3, 1, file );
+    fclose( file );
+
+    for(int i = 0; i < width * height ; ++i)
+    {
+        int index = i*3;
+        unsigned char B,R;
+        B = data[index];
+        R = data[index+2];
+
+        data[index] = R;
+        data[index+2] = B;
+
+        // int index = i*3;
+        // unsigned char B,G,R;
+        // B = data[index];
+        // R = data[index+1];
+        // G = data[index+2];
+
+        // data[index] = B;
+        // data[index+1] = G;
+
+        // data[index+2] = R;
+
+  }
+  return data;
+}
+
+const char* load_image3(std::string img)
+{
+    std::string a =
+    "";
+    return a.c_str();
+}
+
+
+
+unsigned char* load_image(std::string name)
+{
+    int width = 64;
+    int height = 32;
+    unsigned char R;
+    unsigned char G;
+    unsigned char B;
+    std::string output;
+    unsigned char* im = new unsigned char[width*height*4];
+
+    std::ifstream image(name, std::ios::in | std::ios_base::binary);
+
+    unsigned char header[14];
+    unsigned char header2[40];
+
+    image.read(reinterpret_cast<char*>(&header), sizeof(header));
+    image.read(reinterpret_cast<char*>(&header2), sizeof(header2));
+
+    
+    int padding = ((4- (width*3)%4)%4);
+
+    // while(image.read(reinterpret_cast<char*>(&R), sizeof(R)) &&  image.read(reinterpret_cast<char*>(&G), sizeof(G)) && image.read(reinterpret_cast<char*>(&B), sizeof(B)))
+    for(int y = 0 ; y < height ; ++y)
+    {
+        for(int x = 0; x < width; ++x)
+        {
+            unsigned char rgb[4];
+            image.read(reinterpret_cast<char*>(rgb), 4);
+            // image.read(reinterpret_cast<char*>(&G), sizeof(G));
+            // image.read(reinterpret_cast<char*>(&B), sizeof(B));
+            // output.push_back(B);
+
+            // output.push_back(G);
+            // output.push_back(R);
+            im[(x+y*width)*4] = rgb[2];
+            im[(x+y*width)*4+1] = rgb[1];
+            im[(x+y*width)*4+2] = rgb[0];
+            im[(x+y*width)*4+3] = rgb[3];
+            // image.ignore(padding);
+        }
+    }
+    // im[width*height*3-1] = '\0';
+        
+
+        
+
+    return im;
+}
+
+unsigned char* create_image()
+{
+    int width = 64;
+    int height = 32;
+    unsigned char* im = new unsigned char[height*width*4];
+    for(int y = 0 ; y < height ; ++y)
+    {
+        for(int x = 0; x < width; ++x)
+        {
+            if(x >10 && x < 20)
+            {
+                im[y*width + x] = 1;
+                im[y*width + x + 1] = 1;
+                im[y*width + x + 2] = 1;
+                im[y*width + x + 3] = 1;
+
+            }else{
+                im[y*width + x] = 0;
+                im[y*width + x + 1] = 0;
+                im[y*width + x + 2] = 0;
+                im[y*width + x + 3] = 1;
+
+            }
+            im[(y*width + x)*4] = 255;
+            im[(y*width + x)*4+1] = 255;
+            im[(y*width + x)*4+2] = 255;
+            im[(y*width + x)*4+3] = 255;
+        }
+    }
+    return im;
 }
