@@ -10,16 +10,21 @@
 #include "stb_image.h"
 
 
-//Function declarations. see their definition for description of function.
+//Function declarations. see their definition at the bottom for description of function.
 void ce();
 void print_gl_version();
 static void glfwErrorCallback(int, const char*);
 void keyCallback(GLFWwindow*, int, int, int, int);
 GLFWwindow* init();
+void set_texture_param();
+void draw_mm_buttons(unsigned int);
+void clear_window();
+
+
 
 
 //Global variables
-bool play_button_selected = true;
+bool play_button_selected = true; //whether play button is selected in the main menu
 
 
 int main()
@@ -43,7 +48,11 @@ int main()
     //attach shader to program
     program.attach_shaders();
 
-    //position of vertices
+
+
+
+
+    //vertex data for main menu
     float left = -0.2f;
     float bottom = 0.0f;
     float width = 0.4f;
@@ -52,7 +61,7 @@ int main()
     float left_quit = -0.2f;
     float bottom_quit = -0.25f;
 
-    float vertices[] = {
+    float vertices_mm[] = {
         //play button
         //positions                 texture coordinates
         left, bottom,                0.0f, 0.0f, //bottom left
@@ -67,11 +76,12 @@ int main()
         left_quit,bottom_quit+height,          0.0f, 1.0f //top left
     };
 
-    //create buffer to store vertices
-    unsigned int vertex_buffer;
-    glGenBuffers(1, &vertex_buffer);
-    glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer); //set buffer as current one
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW); //add data to buffer
+
+    //create buffer to store vertices for main menu
+    unsigned int vertex_buffer_mm;
+    glGenBuffers(1, &vertex_buffer_mm);
+    glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer_mm); //set buffer as current one
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices_mm), vertices_mm, GL_STATIC_DRAW); //add data to buffer
 
     //position of vertices attribute (vertex data layout)
     glVertexAttribPointer(0, 2, //number of positions
@@ -86,7 +96,7 @@ int main()
     glEnableVertexAttribArray(1);
 
 
-    //load images
+    //load play and quit images
     int imWidth, imHeight, imChannels;
     stbi_set_flip_vertically_on_load(1);
 
@@ -103,88 +113,46 @@ int main()
         return -1;
     }
 
+
     //create play texture
     unsigned int texture_play;
     glActiveTexture(GL_TEXTURE0); //activate texture slot
     glGenTextures(1, &texture_play); 
     glBindTexture(GL_TEXTURE_2D, texture_play); 
-
     //set texture parameters
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
+    set_texture_param();
     //set the image to the current texture slot
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, imWidth, imHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, image_play);
-    // glGenerateMipmap(GL_TEXTURE_2D);
 
     //create quit texture
-    glActiveTexture(GL_TEXTURE1); //activate texture slot
     unsigned int texture_quit;
+    glActiveTexture(GL_TEXTURE1); //activate texture slot
     glGenTextures(1, &texture_quit); 
     glBindTexture(GL_TEXTURE_2D, texture_quit); 
-
-    //set texture parameters
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
+    set_texture_param();//set texture parameters
     //set the image to the current texture slot
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, imWidth, imHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, image_quit);
-    // glGenerateMipmap(GL_TEXTURE_2D);
 
+    //use program
+    program.use();
 
-
-    glUseProgram(program.id());
+    //set shader variable for selecting main menu buttons
     glUniform1i(glGetUniformLocation(program.id(), "uPlaySelected"), 1);
     
-    
+
+    //check for errors
     ce();
+
 
     //running program
     while(!glfwWindowShouldClose(window))
     {
         //clear the window's content
-        glClearColor(0.0f, 0.1f, 0.0f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
+        clear_window();
 
-        //activate texture and shaders
-        glUseProgram(program.id());
+        //draw main menu buttons
+        draw_mm_buttons(program.id());
 
-        //draw play ---------------------------
-        glActiveTexture(GL_TEXTURE0); //activate texture slot
-        glBindTexture(GL_TEXTURE_2D, texture_play);
-
-        //highlight play button if selected
-        if(play_button_selected)
-        {
-            glUniform1i(glGetUniformLocation(program.id(), "uPlaySelected"), 1);
-
-        }else{
-            glUniform1i(glGetUniformLocation(program.id(), "uPlaySelected"), 0);
-        }
-        glUniform1i(glGetUniformLocation(program.id(), "texture"), 0);
-        glDrawArrays(GL_QUADS, 0, 4); //draw buffer
-
-
-        //draw quit -----------------------------
-        glActiveTexture(GL_TEXTURE1); //activate texture slot
-        glBindTexture(GL_TEXTURE_2D, texture_quit);
-    
-
-        //highlight quit button if selected
-        if(!play_button_selected)
-        {
-            glUniform1i(glGetUniformLocation(program.id(), "uPlaySelected"), 1);
-
-        }else{
-            glUniform1i(glGetUniformLocation(program.id(), "uPlaySelected"), 0);
-        }
-        glUniform1i(glGetUniformLocation(program.id(), "texture"), 1);
-
-        glDrawArrays(GL_QUADS, 4, 4); //draw buffer
 
 
         glfwSwapBuffers(window);//swap buffer
@@ -303,4 +271,60 @@ GLFWwindow* init()
     }
 
     return window;
+}
+
+
+//set texture parameters
+void set_texture_param()
+{
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+}
+
+//draws play button in main menu
+void draw_play_button(unsigned int id)
+{
+    //highlight play button if selected
+    if(play_button_selected)
+    {
+        glUniform1i(glGetUniformLocation(id, "uPlaySelected"), 1);
+
+    }else{
+        glUniform1i(glGetUniformLocation(id, "uPlaySelected"), 0);
+    }
+    glActiveTexture(GL_TEXTURE0); //activate texture slot 0 for rendering play button
+    glUniform1i(glGetUniformLocation(id, "texture"), 0); //update texture variable to play's image
+    glDrawArrays(GL_QUADS, 0, 4); //draw play button
+}
+
+//darws quit button in main menu
+void draw_quit_button(unsigned int id)
+{
+    //highlight quit button if selected
+    if(!play_button_selected)
+    {
+        glUniform1i(glGetUniformLocation(id, "uPlaySelected"), 1);
+
+    }else{
+        glUniform1i(glGetUniformLocation(id, "uPlaySelected"), 0);
+    }
+    glActiveTexture(GL_TEXTURE1); //activate texture slot 1 for rendering quit button
+    glUniform1i(glGetUniformLocation(id, "texture"), 1);//update texture variable to quit's image
+    glDrawArrays(GL_QUADS, 4, 4); //draw buffer
+}
+
+//draw play and quit buttons in the main menu
+void draw_mm_buttons(unsigned int id)
+{
+    draw_play_button(id);
+    draw_quit_button(id);
+}
+
+//clears window's content
+void clear_window()
+{
+    glClearColor(0.0f, 0.1f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
 }

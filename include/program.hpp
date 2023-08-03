@@ -86,6 +86,12 @@ public:
         return id_;
     }
 
+    //use program
+    void use()
+    {
+        glUseProgram(id_);
+    }
+
 
 private:
     unsigned int id_;
