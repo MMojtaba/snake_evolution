@@ -8,12 +8,12 @@ panic()
 }
 
 # Get the directory in which the currently running script is located.
-cmd_dir=$(dirname "$0") || panic "cannot determine command directory"
+cmd_dir=$(dirname "$0") || panic "cannot determine current directory"
 
-snake_game="$cmd_dir/run_snake_evolution"
+snake_game_loc="$cmd_dir/run_snake_evolution"
 
 echo "Running Snake Evolution game..."
-$snake_game || panic "hello program failed"
+$snake_game_loc || panic "Running Snake Evolution failed"
 
 
 
