@@ -19,7 +19,7 @@ GLFWwindow* init();
 void set_texture_param();
 void draw_mm_buttons(unsigned int);
 void clear_window();
-void load_image(std::string name, unsigned char*);
+void load_image(std::string name, unsigned char*, int width, int height);
 
 
 
@@ -102,7 +102,7 @@ int main()
     imHeight = 32;
 
     unsigned char* image_play = new unsigned char[imWidth*imHeight*4];
-    load_image("./images/play.bmp", image_play);
+    load_image("./images/play.bmp", image_play, imWidth, imHeight);
     if(!image_play)
     {
         std::cout << "could not load play image" << std::endl;
@@ -110,7 +110,7 @@ int main()
     }
 
     unsigned char* image_quit = new unsigned char[imWidth*imHeight*4];
-    load_image("./images/quit.bmp", image_quit);
+    load_image("./images/quit.bmp", image_quit, imWidth, imHeight);
     
 
 
@@ -332,36 +332,25 @@ void clear_window()
 
 
 //read the speicifed bmp image
-void load_image(std::string name, unsigned char* im)
+void load_image(std::string name, unsigned char* dest, int width, int height)
 {
-    int width = 64;
-    int height = 32;
-    unsigned char R;
-    unsigned char G;
-    unsigned char B;
-    std::string output;
-
     std::ifstream image(name, std::ios::in | std::ios_base::binary);
 
+    //read the header to get to data
     unsigned char header[70]; //54
-
     image.read(reinterpret_cast<char*>(&header), sizeof(header));
 
-    
-    int padding = ((4- (width*3)%4)%4);
-
+    //read data
     for(int y = 0 ; y < height ; ++y)
     {
         for(int x = 0; x < width; ++x)
         {
             unsigned char rgb[4];
             image.read(reinterpret_cast<char*>(rgb), 4);
-            im[(x+y*width)*4] = rgb[2];
-            im[(x+y*width)*4+1] = rgb[1];
-            im[(x+y*width)*4+2] = rgb[0];
-            im[(x+y*width)*4+3] = rgb[3];
+            dest[(x+y*width)*4] = rgb[2];
+            dest[(x+y*width)*4+1] = rgb[1];
+            dest[(x+y*width)*4+2] = rgb[0];
+            dest[(x+y*width)*4+3] = rgb[3];
         }
     }
-
-
 }
