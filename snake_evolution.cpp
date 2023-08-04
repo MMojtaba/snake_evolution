@@ -20,19 +20,72 @@ void set_texture_param();
 void draw_mm_buttons(unsigned int);
 void clear_window();
 void load_image(std::string name, unsigned char*, int width, int height);
+unsigned int program_render_mm();
+unsigned int program_render_game();
 
 
 
 //Global variables
 bool play_button_selected = true; //whether play button is selected in the main menu
-
+bool in_menu = true;
 
 int main()
 {
     //initialize things such as glfw and glew and create a window
     GLFWwindow* window = init();
     
-    //get shader code
+   unsigned int program_id_mm = program_render_mm();
+   unsigned int program_id_game = program_render_mm();
+
+
+    //check for errors
+    ce();
+
+    //running program
+    while(!glfwWindowShouldClose(window))
+    {
+        //clear the window's content
+        clear_window();
+
+        if(in_menu){
+            //draw main menu
+            draw_mm_buttons(program_id_mm);
+        }else{
+            //draw game
+            // draw_game();
+        }
+        
+
+        
+
+
+
+        glfwSwapBuffers(window);//swap buffer
+        glfwPollEvents();//poll for events (such as quit)
+    }
+  
+
+    //clean up
+    glfwDestroyWindow(window);
+    glfwTerminate();
+    return 0;
+}
+
+
+
+
+
+
+
+
+//End of main ---------------------------------------------------------------------------------
+
+
+//do necessary things to render the main menu and return the corresponding program id
+unsigned int program_render_mm()
+{
+
+ //get shader code
     ShaderCode shaderCode;
     const char* vs_code = shaderCode.get_play_vertex();
     const char* fs_code = shaderCode.get_play_frag();
@@ -113,7 +166,6 @@ int main()
     load_image("./images/quit.bmp", image_quit, imWidth, imHeight);
     
 
-
     //create play texture
     unsigned int texture_play;
     glActiveTexture(GL_TEXTURE0); //activate texture slot
@@ -138,49 +190,22 @@ int main()
 
     //set shader variable for selecting main menu buttons
     glUniform1i(glGetUniformLocation(program.id(), "uPlaySelected"), 1);
-    
 
-    //check for errors
-    // ce();
-
-
-    //running program
-    while(!glfwWindowShouldClose(window))
-    {
-        //clear the window's content
-        clear_window();
-
-        //draw main menu buttons
-        draw_mm_buttons(program.id());
-
-
-
-        glfwSwapBuffers(window);//swap buffer
-        glfwPollEvents();//poll for events (such as quit)
-    }
-  
-
-    //clean up
-    glfwDestroyWindow(window);
-    glfwTerminate();
-    return 0;
+    return program.id();
 }
 
 
+unsigned int program_render_game()
+{
+    ShaderCode shaderCode;
+    
+
+    Program program;
 
 
+    return program.id();
+}
 
-
-
-
-
-
-
-
-
-
-
-//End of main ---------------------------------------------------------------------------------
 
 //if an error has occured, prints the error code and terminates program
 void ce()
@@ -224,6 +249,12 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
     if((key == GLFW_KEY_UP && action == GLFW_PRESS) || (key == GLFW_KEY_DOWN && action == GLFW_PRESS))
     {
         play_button_selected = !play_button_selected;
+    }
+
+    //start game if enter is pressed while selecting play
+    if(key == GLFW_KEY_ENTER && play_button_selected)
+    {
+        in_menu = false;
     }
 }
 
