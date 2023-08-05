@@ -1,3 +1,6 @@
+#ifndef PROGRAM_H
+#define PROGRAM_H
+
 #include <GL/glew.h>
 // #include <GLFW/glfw3.h>
 #include <iostream>
@@ -98,3 +101,6 @@ private:
     unsigned int vertex_shader_;
     unsigned int frag_shader_;
 };
+
+
+#endif

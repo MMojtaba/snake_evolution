@@ -1,3 +1,6 @@
+#ifndef SHADER_CODE_H
+#define SHADER_CODE_H
+
 #include <string>
 
 class ShaderCode
@@ -50,3 +53,6 @@ private:
     std::string quit_frag_shader;
 };
 
+
+
+#endif

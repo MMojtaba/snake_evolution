@@ -8,22 +8,22 @@
 #include "shader_code.hpp"
 #include "program.hpp"
 #include "game.hpp"
+#include "utils.hpp"
 
 
 
 //Function declarations. see their definition at the bottom for description of function.
 void ce();
-void print_gl_version();
 static void glfwErrorCallback(int, const char*);
 void keyCallback(GLFWwindow*, int, int, int, int);
 GLFWwindow* init();
-void set_texture_param();
 void draw_mm_buttons(unsigned int);
 void clear_window();
-void load_image(std::string name, unsigned char*, int width, int height);
 unsigned int program_render_mm();
-unsigned int program_render_game();
 
+
+//initialize things such as glfw and glew and create a window
+GLFWwindow* window = init();
 
 
 //Global variables
@@ -32,12 +32,9 @@ Game game;
 
 int main()
 {
-    //initialize things such as glfw and glew and create a window
-    GLFWwindow* window = init();
     
-   unsigned int program_id_mm = program_render_mm();
-   unsigned int program_id_game = program_render_mm();
-
+    
+    unsigned int program_id_mm = program_render_mm();
 
     //check for errors
     ce();
@@ -45,6 +42,7 @@ int main()
     //running program
     while(!glfwWindowShouldClose(window))
     {
+
         //clear the window's content
         clear_window();
 
@@ -53,7 +51,7 @@ int main()
             draw_mm_buttons(program_id_mm);
         }else{
             //draw game
-            game.render_game(program_id_game);
+            game.render_game();
         }
         
 
@@ -94,7 +92,7 @@ unsigned int program_render_mm()
     Program program;
     program.create_shaders(vs_code, fs_code);
 
-    //Add attributes for position and textexure coordinates to be used by shaders
+    //Add attributes for position and texture coordinates to be used by shaders
     glBindAttribLocation(program.id(), 0, "aPos");
     glBindAttribLocation(program.id(), 1, "aTexCoord");
 
@@ -195,50 +193,19 @@ unsigned int program_render_mm()
 }
 
 
-unsigned int program_render_game()
-{
-    ShaderCode shaderCode;
-    
-
-    Program program;
 
 
-    return program.id();
-}
 
-
-//if an error has occured, prints the error code and terminates program
-void ce()
-{
-    GLenum err;
-    while((err = glGetError()) != GL_NO_ERROR)
-    {
-        std::cout << "Error: " << err << std::endl; 
-        assert(false);
-    }
-}
-
-//prints opengl version information
-void print_gl_version()
-{
-    std::cout << "GL version: " << glGetString(GL_VERSION) << std::endl;
-    std::cout << "GL vendor : " << glGetString(GL_VENDOR  ) << std::endl;
-    std::cout << "GL renderer: " << glGetString(GL_RENDERER ) << std::endl;
-    std::cout << "GLSL version: " << glGetString(GL_SHADING_LANGUAGE_VERSION  ) << std::endl;
-    int numTexUnits;
-    glGetIntegerv(GL_MAX_TEXTURE_UNITS, &numTexUnits);
-    std::cout << "Texture Units: " << numTexUnits  << std::endl;
-}
-
-//handle glfw errors 
-static void glfwErrorCallback(int id, const char* err)
-{
-  std::cerr << err <<"\n";
-}
 
 //Handle user inputs
 void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
+    //for debugging: TODO remove
+    if(key==GLFW_KEY_BACKSLASH && action == GLFW_PRESS)
+    {
+        game.change_in_menu();
+    }
+
     //escape key: close game
     if(key == GLFW_KEY_ESCAPE)
     {
@@ -309,14 +276,7 @@ GLFWwindow* init()
 }
 
 
-//set texture parameters
-void set_texture_param()
-{
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-}
+
 
 //draws play button in main menu
 void draw_play_button(unsigned int id)
@@ -353,8 +313,13 @@ void draw_quit_button(unsigned int id)
 //draw play and quit buttons in the main menu
 void draw_mm_buttons(unsigned int id)
 {
+    glEnableVertexAttribArray(0);
+    glEnableVertexAttribArray(1);
     draw_play_button(id);
     draw_quit_button(id);
+    glDisableVertexAttribArray(0);
+    glDisableVertexAttribArray(1);
+
 }
 
 //clears window's content
@@ -364,28 +329,3 @@ void clear_window()
     glClear(GL_COLOR_BUFFER_BIT);
 }
 
-
-
-//read the speicifed bmp image
-void load_image(std::string name, unsigned char* dest, int width, int height)
-{
-    std::ifstream image(name, std::ios::in | std::ios_base::binary);
-
-    //read the header to get to data
-    unsigned char header[70]; //54
-    image.read(reinterpret_cast<char*>(&header), sizeof(header));
-
-    //read data
-    for(int y = 0 ; y < height ; ++y)
-    {
-        for(int x = 0; x < width; ++x)
-        {
-            unsigned char rgb[4];
-            image.read(reinterpret_cast<char*>(rgb), 4);
-            dest[(x+y*width)*4] = rgb[2];
-            dest[(x+y*width)*4+1] = rgb[1];
-            dest[(x+y*width)*4+2] = rgb[0];
-            dest[(x+y*width)*4+3] = rgb[3];
-        }
-    }
-}
