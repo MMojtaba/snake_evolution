@@ -7,6 +7,7 @@
 // #include <stdint.h>
 #include "shader_code.hpp"
 #include "program.hpp"
+#include "game.hpp"
 
 
 
@@ -26,8 +27,8 @@ unsigned int program_render_game();
 
 
 //Global variables
-bool play_button_selected = true; //whether play button is selected in the main menu
-bool in_menu = true;
+Game game;
+
 
 int main()
 {
@@ -47,16 +48,15 @@ int main()
         //clear the window's content
         clear_window();
 
-        if(in_menu){
+        if(game.in_menu()){
             //draw main menu
             draw_mm_buttons(program_id_mm);
         }else{
             //draw game
-            // draw_game();
+            game.render_game(program_id_game);
         }
         
 
-        
 
 
 
@@ -248,13 +248,17 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
     //up and down switches the selected button in the main menu
     if((key == GLFW_KEY_UP && action == GLFW_PRESS) || (key == GLFW_KEY_DOWN && action == GLFW_PRESS))
     {
-        play_button_selected = !play_button_selected;
+        game.change_play_button_selected();
     }
 
-    //start game if enter is pressed while selecting play
-    if(key == GLFW_KEY_ENTER && play_button_selected)
+    //start game if enter is pressed while selecting play in the menu
+    if(game.in_menu() && key == GLFW_KEY_ENTER && game.play_button_selected())
     {
-        in_menu = false;
+        game.change_in_menu();
+    } else if(game.in_menu() && key == GLFW_KEY_ENTER && !game.play_button_selected())
+    {
+        //quit game if quit is selected in the menu
+        glfwSetWindowShouldClose(window, true);
     }
 }
 
@@ -318,7 +322,7 @@ void set_texture_param()
 void draw_play_button(unsigned int id)
 {
     //highlight play button if selected
-    if(play_button_selected)
+    if(game.play_button_selected())
     {
         glUniform1i(glGetUniformLocation(id, "uPlaySelected"), 1);
 
@@ -334,7 +338,7 @@ void draw_play_button(unsigned int id)
 void draw_quit_button(unsigned int id)
 {
     //highlight quit button if selected
-    if(!play_button_selected)
+    if(!game.play_button_selected())
     {
         glUniform1i(glGetUniformLocation(id, "uPlaySelected"), 1);
 
