@@ -4,6 +4,8 @@
 #include <GL/glew.h>
 #include <vector>
 #include <string>
+#include <stdlib.h>
+#include <time.h>
 #include "program.hpp"
 #include "utils.hpp"
 
@@ -16,24 +18,25 @@ public:
         length_(1),
         score_(0),
         snake_dir_(UP),
+        width_(32.0f),
         velocity_(2.0f),
         velocity_x_(0.0f),
         velocity_y_(velocity_),
-        x_(0.0f), //400
-        y_(0.0f), //250
-        x_apple_(0.0f),//400
-        y_apple_(0.0f),//400
+        x_(400.0f),
+        y_(250.0f), 
+        x_apple_(500.0f),
+        y_apple_(400.0f),
         //vertex shader code
         vs_code( 
             "#version 120\n"
             "attribute vec2 aPos;\n"
             "attribute vec2 aTexCoord;\n"
             "varying vec2 TexCoord;\n"
-            "uniform vec2 uOffset;\n"
+            "uniform vec2 uPos;\n"
             "void main() {\n"
                 //"gl_Position = vec4(aPos, 1.0, 1.0);\n"
-                "float x_new = (aPos.x+uOffset.x - 400.0f)/400.0f;\n" //convert from pixel to -1 to 1 range
-                "float y_new = (aPos.y+uOffset.y - 300.0f)/300.0f;\n"
+                "float x_new = (aPos.x+uPos.x - 400.0f)/400.0f;\n" //convert from pixel to -1 to 1 range
+                "float y_new = (aPos.y+uPos.y - 300.0f)/300.0f;\n"
                 "gl_Position=vec4(x_new, y_new, 1.0, 1.0);\n"
                 "TexCoord = vec2(aTexCoord.x, aTexCoord.y);\n"
             "}"
@@ -50,6 +53,7 @@ public:
         )
     {
 
+
         //create shaders
         program_.create_shaders(vs_code.c_str(), fs_code.c_str());
 
@@ -64,26 +68,27 @@ public:
         program_.attach_shaders();
 
         //vertex data for snake and apple
-        float width = 32.0f; //width of snake head and apple in pixels
-        float init_x = 400;
-        float init_y = 300;
-        float init_x_apple = 500;
-        float init_y_apple = 500;
+        float a = 0.0f;
+        // float width = 32.0f; //width of snake head and apple in pixels
+        float init_x = 0.0f;
+        float init_y = 0.0f;
+        float init_x_apple = 0.0f;
+        float init_y_apple = 0.0f;
         
         float vertices[] = 
         {
             //snake head
             //positions             texture coordinates
             init_x, init_y,                 0.0f, 0.0f, //bottom left
-            init_x+width, init_y,           1.0f, 0.0f, //bottom right
-            init_x+width, init_y+width,     1.0f, 1.0f, //top right
-            init_x, init_y+width,           0.0f, 1.0f, //top left
+            init_x+width_, init_y,           1.0f, 0.0f, //bottom right
+            init_x+width_, init_y+width_,     1.0f, 1.0f, //top right
+            init_x, init_y+width_,           0.0f, 1.0f, //top left
             //apple
             //positions                         texture coordinates
             init_x_apple, init_y_apple,                 0.0f, 0.0f, //bottom left
-            init_x_apple+width, init_y_apple,           1.0f, 0.0f, //bottom right
-            init_x_apple+width, init_y_apple+width,     1.0f, 1.0f, //top right
-            init_x_apple, init_y_apple+width,           0.0f, 1.0f //top left
+            init_x_apple+width_, init_y_apple,           1.0f, 0.0f, //bottom right
+            init_x_apple+width_, init_y_apple+width_,     1.0f, 1.0f, //top right
+            init_x_apple, init_y_apple+width_,           0.0f, 1.0f //top left
         };
 
         //create buffer to store the vertices data
@@ -234,7 +239,7 @@ public:
         glEnableVertexAttribArray(3); 
         glActiveTexture(GL_TEXTURE2);
         glUniform1i(glGetUniformLocation(program_.id(), "texture"), 2);
-        glUniform2f(glGetUniformLocation(program_.id(), "uOffset"), x_, y_);
+        glUniform2f(glGetUniformLocation(program_.id(), "uPos"), x_, y_);
 
         glDrawArrays(GL_QUADS, 0, 4);
         // glDisableVertexAttribArray(2); 
@@ -246,7 +251,7 @@ public:
         // glEnableVertexAttribArray(5); 
         glActiveTexture(GL_TEXTURE3);
         glUniform1i(glGetUniformLocation(program_.id(), "texture"), 3);
-        glUniform2f(glGetUniformLocation(program_.id(), "uOffset"), x_apple_, y_apple_);
+        glUniform2f(glGetUniformLocation(program_.id(), "uPos"), x_apple_, y_apple_);
         glDrawArrays(GL_QUADS, 4, 4);
         glDisableVertexAttribArray(2); 
         glDisableVertexAttribArray(3); 
@@ -259,9 +264,28 @@ public:
     }
 
 
+
 private:
+
+    //put a random x and y within the screen inside x and y
+    void random_location(float& x, float& y)
+    {
+        srand(time(NULL));
+        x = rand() % 650 + 100; //between 100 and 650
+        y = rand() % 500 + 100; //between 100 and 500
+    }
+
+    //checks whether the snake is colliding with something
+    void check_collision()
+    {
+        //check walls
+    }
+
+
+
     bool play_button_selected_;
     bool in_menu_;
+    float width_; //width of single entities (snake head, apple)
     float velocity_;
     float velocity_x_; //velocity of snake in x direction
     float velocity_y_; //velocity of snake in y direction
