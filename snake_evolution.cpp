@@ -55,8 +55,7 @@ int main()
         }
         
 
-
-
+        ce();
 
         glfwSwapBuffers(window);//swap buffer
         glfwPollEvents();//poll for events (such as quit)
@@ -226,6 +225,19 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
     {
         //quit game if quit is selected in the menu
         glfwSetWindowShouldClose(window, true);
+    }
+
+    //process directions when in game
+    if(!game.in_menu())
+    {
+        if(key == GLFW_KEY_UP && action == GLFW_PRESS)
+            game.process_up();
+        else if(key == GLFW_KEY_DOWN && action == GLFW_PRESS)
+            game.process_down();
+        else if(key == GLFW_KEY_RIGHT && action == GLFW_PRESS)
+            game.process_right();
+        else if(key == GLFW_KEY_LEFT && action == GLFW_PRESS)
+            game.process_left();
     }
 }
 
