@@ -13,7 +13,6 @@
 
 
 //Function declarations. see their definition at the bottom for description of function.
-void ce();
 static void glfwErrorCallback(int, const char*);
 void keyCallback(GLFWwindow*, int, int, int, int);
 GLFWwindow* init();
@@ -84,6 +83,7 @@ unsigned int program_render_mm()
 
  //get shader code
     ShaderCode shaderCode;
+
     const char* vs_code = shaderCode.get_play_vertex();
     const char* fs_code = shaderCode.get_play_frag();
 
@@ -97,7 +97,6 @@ unsigned int program_render_mm()
 
     //attach shader to program
     program.attach_shaders();
-
 
 
 
@@ -134,16 +133,16 @@ unsigned int program_render_mm()
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices_mm), vertices_mm, GL_STATIC_DRAW); //add data to buffer
 
     //position of vertices attribute (vertex data layout)
+    glEnableVertexAttribArray(0); 
     glVertexAttribPointer(0, 2, //number of positions
         GL_FLOAT, GL_FALSE, 4*sizeof(float), //size of each vertex
         0); //where positions start
-    glEnableVertexAttribArray(0); 
 
     //texture coordinate attributes
+    glEnableVertexAttribArray(1);
     glVertexAttribPointer(1, 2, //number of coordinates for a texture coordinate
         GL_FLOAT, GL_FALSE, 4*sizeof(float), //size of each vertex
         (void*)(2*sizeof(float)));//where texture coordinate starts
-    glEnableVertexAttribArray(1);
 
 
     //load play and quit images

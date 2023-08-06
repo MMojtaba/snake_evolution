@@ -68,31 +68,26 @@ public:
         program_.attach_shaders();
 
         //vertex data for snake and apple
-        float a = 0.0f;
-        // float width = 32.0f; //width of snake head and apple in pixels
-        float init_x = 0.0f;
-        float init_y = 0.0f;
-        float init_x_apple = 0.0f;
-        float init_y_apple = 0.0f;
         
         float vertices[] = 
         {
             //snake head
             //positions             texture coordinates
-            init_x, init_y,                 0.0f, 0.0f, //bottom left
-            init_x+width_, init_y,           1.0f, 0.0f, //bottom right
-            init_x+width_, init_y+width_,     1.0f, 1.0f, //top right
-            init_x, init_y+width_,           0.0f, 1.0f, //top left
+            0.0f, 0.0f,             0.0f, 0.0f, //bottom left
+            width_, 0.0f,           1.0f, 0.0f, //bottom right
+            width_, width_,         1.0f, 1.0f, //top right
+            0.0f, width_,           0.0f, 1.0f, //top left
             //apple
-            //positions                         texture coordinates
-            init_x_apple, init_y_apple,                 0.0f, 0.0f, //bottom left
-            init_x_apple+width_, init_y_apple,           1.0f, 0.0f, //bottom right
-            init_x_apple+width_, init_y_apple+width_,     1.0f, 1.0f, //top right
-            init_x_apple, init_y_apple+width_,           0.0f, 1.0f //top left
+            //positions             texture coordinates
+            0.0f, 0.0f,             0.0f, 0.0f, //bottom left
+            width_, 0.0f,           1.0f, 0.0f, //bottom right
+            width_, width_,           1.0f, 1.0f, //top right
+            0.0f, width_,             0.0f, 1.0f //top left
         };
 
         //create buffer to store the vertices data
         unsigned int vertex_buffer;
+        glGenBuffers(1, &vertex_buffer);
         glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer); //set buffer as current one
         glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW); //add data to buffer
 
@@ -143,7 +138,7 @@ public:
         glBindTexture(GL_TEXTURE_2D, texture_apple);
         set_texture_param();
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, imDims, imDims, 0, GL_RGBA, GL_UNSIGNED_BYTE, image_apple_);
-
+        
         program_.use();
     }
 
