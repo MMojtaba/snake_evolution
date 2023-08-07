@@ -9,6 +9,7 @@
 #include "program.hpp"
 #include "game.hpp"
 #include "utils.hpp"
+#include "texture.hpp"
 
 
 
@@ -167,23 +168,26 @@ unsigned int program_render_mm()
     
 
     //create play texture
-    unsigned int texture_play;
-    glActiveTexture(GL_TEXTURE0); //activate texture slot
-    glGenTextures(1, &texture_play); 
-    glBindTexture(GL_TEXTURE_2D, texture_play); 
-    //set texture parameters
-    set_texture_param();
-    //set the image to the current texture slot
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, imWidth, imHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, image_play);
+    Texture texture_play(image_play, 0, imWidth, imHeight);
+    // unsigned int texture_play;
+    // glActiveTexture(GL_TEXTURE0); //activate texture slot
+    // glGenTextures(1, &texture_play); 
+    // glBindTexture(GL_TEXTURE_2D, texture_play); 
+    // //set texture parameters
+    // set_texture_param();
+    // //set the image to the current texture slot
+    // glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, imWidth, imHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, image_play);
 
     //create quit texture
-    unsigned int texture_quit;
-    glActiveTexture(GL_TEXTURE1); //activate texture slot
-    glGenTextures(1, &texture_quit); 
-    glBindTexture(GL_TEXTURE_2D, texture_quit); 
-    set_texture_param();//set texture parameters
-    //set the image to the current texture slot
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, imWidth, imHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, image_quit);
+    Texture texture_quit(image_quit, 1, imWidth, imHeight);
+
+    // unsigned int texture_quit;
+    // glActiveTexture(GL_TEXTURE1); //activate texture slot
+    // glGenTextures(1, &texture_quit); 
+    // glBindTexture(GL_TEXTURE_2D, texture_quit); 
+    // set_texture_param();//set texture parameters
+    // //set the image to the current texture slot
+    // glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, imWidth, imHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, image_quit);
 
     //use program
     program.use();

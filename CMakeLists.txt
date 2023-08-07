@@ -12,7 +12,12 @@ include_directories(${GLFW_INCLUDE_DIRS} ${GLEW_INCLUDE_DIRS} )
 link_libraries(${GLEW_LIBRARIES} ${GLFW_LIBRARIES})
 
 #create executable and link with libraries
-add_executable(run_snake_evolution snake_evolution.cpp include/shader_code.hpp include/program.hpp include/game.hpp include/utils.hpp)
+add_executable(run_snake_evolution snake_evolution.cpp 
+    include/shader_code.hpp 
+    include/program.hpp include/game.hpp 
+    include/utils.hpp
+    include/texture.hpp)
+    
 target_link_libraries(run_snake_evolution glfw)
 target_link_libraries(run_snake_evolution GL)
 
