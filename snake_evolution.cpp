@@ -26,7 +26,9 @@ GLFWwindow* window = init();
 
 
 //Global variables
-Game game;
+constexpr int window_width = 800;
+constexpr int window_height = 600;
+Game game(window_width,window_height);
 
 
 int main()
@@ -257,8 +259,7 @@ GLFWwindow* init()
         std::cerr << "GLFW was not initialized. \n";
         exit(0);
     }
-    constexpr int window_width = 800;
-    constexpr int window_height = 600;
+    
 	GLFWwindow* window = glfwCreateWindow(window_width, window_height, "Snake Evolution", NULL, NULL);
     if(!window)
 	{
@@ -292,6 +293,9 @@ GLFWwindow* init()
 //draws play button in main menu
 void draw_play_button(unsigned int id)
 {
+    glUseProgram(id);
+    // glEnableVertexAttribArray(0);
+
     //highlight play button if selected
     if(game.play_button_selected())
     {
@@ -308,6 +312,8 @@ void draw_play_button(unsigned int id)
 //darws quit button in main menu
 void draw_quit_button(unsigned int id)
 {
+    glUseProgram(id);
+    // glEnableVertexAttribArray(1);
     //highlight quit button if selected
     if(!game.play_button_selected())
     {
@@ -324,12 +330,12 @@ void draw_quit_button(unsigned int id)
 //draw play and quit buttons in the main menu
 void draw_mm_buttons(unsigned int id)
 {
-    glEnableVertexAttribArray(0);
-    glEnableVertexAttribArray(1);
+    // glEnableVertexAttribArray(0);
+    // glEnableVertexAttribArray(1);
     draw_play_button(id);
     draw_quit_button(id);
-    glDisableVertexAttribArray(0);
-    glDisableVertexAttribArray(1);
+    // glDisableVertexAttribArray(0);
+    // glDisableVertexAttribArray(1);
 
 }
 

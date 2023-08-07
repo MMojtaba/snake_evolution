@@ -12,14 +12,18 @@
 class Game
 {
 public:
-    Game(): 
+    Game(unsigned int win_width, unsigned int win_height): 
         play_button_selected_(true),
         in_menu_(false), //TODO change back to true
+        window_width_(win_width),
+        window_height_(win_height),
+        score_area_height_(100),
+        game_over_(false),
         length_(1),
         score_(0),
         snake_dir_(UP),
         width_(32.0f),
-        velocity_(2.0f),
+        velocity_(4.0f),
         velocity_x_(0.0f),
         velocity_y_(velocity_),
         x_(400.0f),
@@ -256,6 +260,8 @@ public:
         y_ += velocity_y_;
         // std::cout << x_ << std::endl;
 
+        check_collision();
+
     }
 
 
@@ -266,14 +272,40 @@ private:
     void random_location(float& x, float& y)
     {
         srand(time(NULL));
-        x = rand() % 650 + 100; //between 100 and 650
-        y = rand() % 500 + 100; //between 100 and 500
+        x = rand() % (window_width_-150) + 100; //between 100 and 650
+        y = rand() % (window_height_-150-score_area_height_) + 100; //between 100 and 400
     }
 
     //checks whether the snake is colliding with something
     void check_collision()
     {
         //check walls
+        if(x_ <= 0  || x_ >= window_width_-width_
+            || y_ <= 0 || y_ >= window_height_ - width_ - score_area_height_)
+        {
+            // game_over_ = true;
+            process_game_over();
+            return;
+        }
+
+        //check apple collision
+        if(x_ <= x_apple_ + width_ && x_ >= x_apple_ - width_ 
+            && y_ <= y_apple_ + width_ && y_ >= y_apple_ - width_)
+        {
+            //increase score
+            ++score_;
+            //change apple's location
+            random_location(x_apple_, y_apple_);
+            std::cout << "Touched apple, score is: " << score_ << std::endl;
+        }
+
+
+    }
+
+    //handles when the player loses
+    void process_game_over()
+    {
+        in_menu_ = true;
     }
 
 
@@ -281,7 +313,7 @@ private:
     bool play_button_selected_;
     bool in_menu_;
     float width_; //width of single entities (snake head, apple)
-    float velocity_;
+    const float velocity_;
     float velocity_x_; //velocity of snake in x direction
     float velocity_y_; //velocity of snake in y direction
     float x_; //x position of snake
@@ -297,6 +329,10 @@ private:
     unsigned char* image_apple_;
     enum Direction { LEFT, RIGHT, UP, DOWN};
     Direction snake_dir_;
+    const unsigned int window_width_;
+    const unsigned int window_height_;
+    const unsigned int score_area_height_;
+    bool game_over_; //whether the user lost the game
 };
 
 
