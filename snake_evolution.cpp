@@ -223,6 +223,7 @@ void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods
     //start game if enter is pressed while selecting play in the menu
     if(game.in_menu() && key == GLFW_KEY_ENTER && game.play_button_selected())
     {
+        game.reset();
         game.change_in_menu();
     } else if(game.in_menu() && key == GLFW_KEY_ENTER && !game.play_button_selected())
     {

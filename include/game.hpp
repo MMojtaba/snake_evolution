@@ -19,17 +19,8 @@ public:
         window_height_(win_height),
         score_area_height_(100),
         game_over_(false),
-        length_(1),
-        score_(0),
-        snake_dir_(UP),
         width_(32.0f),
         velocity_(4.0f),
-        velocity_x_(0.0f),
-        velocity_y_(velocity_),
-        x_(400.0f),
-        y_(250.0f), 
-        x_apple_(500.0f),
-        y_apple_(400.0f),
         //vertex shader code
         vs_code( 
             "#version 120\n"
@@ -57,7 +48,9 @@ public:
         )
     {
 
-        
+        //set game parameters to their default
+        reset(); 
+
         //create shaders
         program_.create_shaders(vs_code.c_str(), fs_code.c_str());
 
@@ -262,6 +255,20 @@ public:
 
         check_collision();
 
+    }
+
+    //resets game parameters to default
+    void reset()
+    {
+        length_ = 1;
+        score_ = 0;
+        snake_dir_ = UP;
+        velocity_x_ = 0.0f;
+        velocity_y_ = velocity_;
+        x_ = 400.0f;
+        y_ = 250.0f; 
+        x_apple_ = 500.0f;
+        y_apple_ = 400.0f;
     }
 
 
