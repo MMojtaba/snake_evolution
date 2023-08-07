@@ -152,7 +152,9 @@ unsigned int program_render_mm()
     imWidth = 64;
     imHeight = 32;
 
+    // unsigned char* image_play = new unsigned char[imWidth*imHeight*4];
     unsigned char* image_play = new unsigned char[imWidth*imHeight*4];
+
     load_image("./images/play.bmp", image_play, imWidth, imHeight);
     if(!image_play)
     {

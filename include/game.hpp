@@ -14,7 +14,7 @@ class Game
 public:
     Game(unsigned int win_width, unsigned int win_height): 
         play_button_selected_(true),
-        in_menu_(false), //TODO change back to true
+        in_menu_(true), //TODO change back to true
         window_width_(win_width),
         window_height_(win_height),
         score_area_height_(100),
@@ -57,7 +57,7 @@ public:
         )
     {
 
-
+        
         //create shaders
         program_.create_shaders(vs_code.c_str(), fs_code.c_str());
 
@@ -296,7 +296,7 @@ private:
             ++score_;
             //change apple's location
             random_location(x_apple_, y_apple_);
-            std::cout << "Touched apple, score is: " << score_ << std::endl;
+            // std::cout << "Touched apple, score is: " << score_ << std::endl;
         }
 
 
