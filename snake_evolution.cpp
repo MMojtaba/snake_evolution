@@ -36,7 +36,6 @@ int main()
 {
     
     
-    unsigned int program_id_mm = program_render_mm();
 
     //check for errors
     ce();
@@ -48,13 +47,7 @@ int main()
         //clear the window's content
         clear_window();
 
-        if(game.in_menu()){
-            //draw main menu
-            draw_mm_buttons(program_id_mm);
-        }else{
-            //draw game
-            game.render_game();
-        }
+        game.render_game();
         
 
         ce();
@@ -63,6 +56,7 @@ int main()
         glfwPollEvents();//poll for events (such as quit)
     }
   
+    print_gl_version();
 
     //clean up
     glfwDestroyWindow(window);
@@ -80,110 +74,6 @@ int main()
 //End of main ---------------------------------------------------------------------------------
 
 
-//do necessary things to render the main menu and return the corresponding program id
-unsigned int program_render_mm()
-{
-
- //get shader code
-    ShaderCode shaderCode;
-
-    const char* vs_code = shaderCode.get_play_vertex();
-    const char* fs_code = shaderCode.get_play_frag();
-
-    //create program and create shaders
-    Program program;
-    program.create_shaders(vs_code, fs_code);
-
-    //Add attributes for position and texture coordinates to be used by shaders
-    glBindAttribLocation(program.id(), 0, "aPos");
-    glBindAttribLocation(program.id(), 1, "aTexCoord");
-
-    //attach shader to program
-    program.attach_shaders();
-
-
-
-
-    //vertex data for main menu
-    float left = -0.2f;
-    float bottom = 0.0f;
-    float width = 0.4f;
-    float height = 0.2f;
-
-    float left_quit = -0.2f;
-    float bottom_quit = -0.25f;
-
-    float vertices_mm[] = {
-        //play button
-        //positions                 texture coordinates
-        left, bottom,                0.0f, 0.0f, //bottom left
-        left+width,bottom,           1.0f, 0.0f, //bottom right
-        left+width,bottom+height,    1.0f, 1.0f, //top right
-        left,bottom+height,          0.0f, 1.0f, //top left
-        //quit button
-        //positions                 texture coordinates
-        left_quit, bottom_quit,                0.0f, 0.0f, //bottom left
-        left_quit+width,bottom_quit,           1.0f, 0.0f, //bottomright
-        left_quit+width,bottom_quit+height,    1.0f, 1.0f, //top right
-        left_quit,bottom_quit+height,          0.0f, 1.0f //top left
-    };
-
-
-    //create buffer to store vertices for main menu
-    // unsigned int vertex_buffer_mm;
-    // glGenBuffers(1, &vertex_buffer_mm);
-    // glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer_mm); //set buffer as current one
-    // glBufferData(GL_ARRAY_BUFFER, sizeof(vertices_mm), vertices_mm, GL_STATIC_DRAW); //add data to buffer
-
-    // //position of vertices attribute (vertex data layout)
-    // glEnableVertexAttribArray(0); 
-    // glVertexAttribPointer(0, 2, //number of positions
-    //     GL_FLOAT, GL_FALSE, 4*sizeof(float), //size of each vertex
-    //     0); //where positions start
-
-    // //texture coordinate attributes
-    // glEnableVertexAttribArray(1);
-    // glVertexAttribPointer(1, 2, //number of coordinates for a texture coordinate
-    //     GL_FLOAT, GL_FALSE, 4*sizeof(float), //size of each vertex
-    //     (void*)(2*sizeof(float)));//where texture coordinate starts
-
-    program.make_vertex_buffer(vertices_mm, sizeof(vertices_mm), 0, 1);
-
-
-
-    //load play and quit images
-    int imWidth, imHeight, imChannels;
-    imWidth = 64;
-    imHeight = 32;
-
-    // unsigned char* image_play = new unsigned char[imWidth*imHeight*4];
-    unsigned char* image_play = new unsigned char[imWidth*imHeight*4];
-
-    load_image("play", image_play, imWidth, imHeight);
-    if(!image_play)
-    {
-        std::cout << "could not load play image" << std::endl;
-        return -1;
-    }
-
-    unsigned char* image_quit = new unsigned char[imWidth*imHeight*4];
-    load_image("quit", image_quit, imWidth, imHeight);
-    
-
-    //create play texture
-    Texture texture_play(image_play, 0, imWidth, imHeight);
-
-    //create quit texture
-    Texture texture_quit(image_quit, 1, imWidth, imHeight);
-
-    //use program
-    program.use();
-
-    //set shader variable for selecting main menu buttons
-    glUniform1i(glGetUniformLocation(program.id(), "uPlaySelected"), 1);
-
-    return program.id();
-}
 
 
 
@@ -283,55 +173,6 @@ GLFWwindow* init()
 
 
 
-
-//draws play button in main menu
-void draw_play_button(unsigned int id)
-{
-    glUseProgram(id);
-    // glEnableVertexAttribArray(0);
-
-    //highlight play button if selected
-    if(game.play_button_selected())
-    {
-        glUniform1i(glGetUniformLocation(id, "uPlaySelected"), 1);
-
-    }else{
-        glUniform1i(glGetUniformLocation(id, "uPlaySelected"), 0);
-    }
-    glActiveTexture(GL_TEXTURE0); //activate texture slot 0 for rendering play button
-    glUniform1i(glGetUniformLocation(id, "texture"), 0); //update texture variable to play's image
-    glDrawArrays(GL_QUADS, 0, 4); //draw play button
-}
-
-//darws quit button in main menu
-void draw_quit_button(unsigned int id)
-{
-    glUseProgram(id);
-    // glEnableVertexAttribArray(1);
-    //highlight quit button if selected
-    if(!game.play_button_selected())
-    {
-        glUniform1i(glGetUniformLocation(id, "uPlaySelected"), 1);
-
-    }else{
-        glUniform1i(glGetUniformLocation(id, "uPlaySelected"), 0);
-    }
-    glActiveTexture(GL_TEXTURE1); //activate texture slot 1 for rendering quit button
-    glUniform1i(glGetUniformLocation(id, "texture"), 1);//update texture variable to quit's image
-    glDrawArrays(GL_QUADS, 4, 4); //draw buffer
-}
-
-//draw play and quit buttons in the main menu
-void draw_mm_buttons(unsigned int id)
-{
-    // glEnableVertexAttribArray(0);
-    // glEnableVertexAttribArray(1);
-    draw_play_button(id);
-    draw_quit_button(id);
-    // glDisableVertexAttribArray(0);
-    // glDisableVertexAttribArray(1);
-
-}
 
 //clears window's content
 void clear_window()

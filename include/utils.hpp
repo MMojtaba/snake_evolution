@@ -63,9 +63,12 @@ void print_gl_version()
     std::cout << "GL vendor : " << glGetString(GL_VENDOR  ) << std::endl;
     std::cout << "GL renderer: " << glGetString(GL_RENDERER ) << std::endl;
     std::cout << "GLSL version: " << glGetString(GL_SHADING_LANGUAGE_VERSION  ) << std::endl;
-    int numTexUnits;
-    glGetIntegerv(GL_MAX_TEXTURE_UNITS, &numTexUnits);
-    std::cout << "Texture Units: " << numTexUnits  << std::endl;
+    int num;
+    glGetIntegerv(GL_MAX_TEXTURE_UNITS, &num);
+    std::cout << "Texture Units: " << num  << std::endl;
+    glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &num);
+    std::cout << "Max vertex attrib: " << num  << std::endl;
+
 }
 
 

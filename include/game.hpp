@@ -15,15 +15,15 @@ class Game
 public:
     Game(unsigned int win_width, unsigned int win_height): 
         play_button_selected_(true),
-        in_menu_(false), //TODO change back to true
+        in_menu_(true), //TODO change back to true
         window_width_(win_width),
         window_height_(win_height),
         score_area_height_(100),
         game_over_(false),
-        width_(32.0f),
+        entity_width_(32.0f),
         velocity_(4.0f),
         //vertex shader code
-        vs_code( 
+        vs_code_game_( 
             "#version 120\n"
             "attribute vec2 aPos;\n"
             "attribute vec2 aTexCoord;\n"
@@ -38,13 +38,37 @@ public:
             "}"
         ),
         //fragment shader code
-        fs_code(
+        fs_code_game_(
             "#version 120\n"
             "varying vec2 TexCoord;\n"
             "uniform sampler2D texture;\n"
             "void main() {\n"
                 "vec4 color = texture2D(texture, TexCoord);\n"
                 "gl_FragColor = color;\n" 
+            "}"
+        ),
+        vs_code_mm_(
+            "#version 120\n"
+            "attribute vec2 aPos;\n"
+            "attribute vec2 aTexCoord;\n"
+            "varying vec2 TexCoord;\n"
+            "void main() {\n"
+                "gl_Position = vec4(aPos, 1.0, 1.0);\n"
+                "TexCoord = vec2(aTexCoord.x, aTexCoord.y);\n"
+            "}"
+        ),
+        fs_code_mm_(
+            "#version 120\n"
+            "varying vec2 TexCoord;\n"
+            "uniform sampler2D texture;\n"
+            "uniform int uPlaySelected;\n"
+            "void main() {\n"
+                "vec4 color = texture2D(texture, TexCoord);\n"
+                "if(uPlaySelected == 0 || TexCoord.x < 0.95 && TexCoord.x > 0.04 && TexCoord.y < 0.95 && TexCoord.y > 0.04){\n"
+                    "gl_FragColor = color;\n"
+                "}else {\n" //draw border
+                    "gl_FragColor = vec4(0.0,1.0,0.0,1.0);\n" 
+                "}\n"
             "}"
         )
     {
@@ -53,51 +77,69 @@ public:
         reset(); 
 
         //create shaders
-        program_.create_shaders(vs_code.c_str(), fs_code.c_str());
+        program_menu_.create_shaders(vs_code_mm_.c_str(), fs_code_mm_.c_str());
+        program_game_.create_shaders(vs_code_game_.c_str(), fs_code_game_.c_str());
+
 
         //add attributes: 
-        glBindAttribLocation(program_.id(), 2, "aPos"); //vertex position attribute
-        glBindAttribLocation(program_.id(), 3, "aTexCoord"); //texture coordinate attribute
+
+        //main menu
+        glBindAttribLocation(program_menu_.id(), 0, "aPos");
+        glBindAttribLocation(program_menu_.id(), 1, "aTexCoord");
+
+        //game
+        glBindAttribLocation(program_game_.id(), 2, "aPos"); //vertex position attribute
+        glBindAttribLocation(program_game_.id(), 3, "aTexCoord"); //texture coordinate attribute
     
         //attach shaders
-        program_.attach_shaders();
+        program_game_.attach_shaders(); //main menu
+        program_menu_.attach_shaders(); //game
 
         //vertex data for snake and apple
-        
-        float vertices[] = 
+        float vertices_game[] = 
         {
             //snake head
             //positions             texture coordinates
             0.0f, 0.0f,             0.0f, 0.0f, //bottom left
-            width_, 0.0f,           1.0f, 0.0f, //bottom right
-            width_, width_,         1.0f, 1.0f, //top right
-            0.0f, width_,           0.0f, 1.0f, //top left
+            entity_width_, 0.0f,           1.0f, 0.0f, //bottom right
+            entity_width_, entity_width_,         1.0f, 1.0f, //top right
+            0.0f, entity_width_,           0.0f, 1.0f, //top left
             //apple
             //positions             texture coordinates
             0.0f, 0.0f,             0.0f, 0.0f, //bottom left
-            width_, 0.0f,           1.0f, 0.0f, //bottom right
-            width_, width_,           1.0f, 1.0f, //top right
-            0.0f, width_,             0.0f, 1.0f //top left
+            entity_width_, 0.0f,           1.0f, 0.0f, //bottom right
+            entity_width_, entity_width_,           1.0f, 1.0f, //top right
+            0.0f, entity_width_,             0.0f, 1.0f //top left
         };
 
-        //create buffer to store the vertices data
-        // unsigned int vertex_buffer;
-        // glGenBuffers(1, &vertex_buffer);
-        // glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer); //set buffer as current one
-        // glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW); //add data to buffer
+        //vertex data for main menu
+        float left = -0.2f;
+        float bottom = 0.0f;
+        float width = 0.4f;
+        float height = 0.2f;
+        float left_quit = -0.2f;
+        float bottom_quit = -0.25f;
 
-        //position of vertices attribute
-        // glEnableVertexAttribArray(2); 
-        // glVertexAttribPointer(2, 2, //number of position coordinates
-        // GL_FLOAT, GL_FALSE, 4*sizeof(float), //size of each vertex
-        // 0); //where positions start
+        float vertices_mm[] = {
+            //play button
+            //positions                 texture coordinates
+            left, bottom,                0.0f, 0.0f, //bottom left
+            left+width,bottom,           1.0f, 0.0f, //bottom right
+            left+width,bottom+height,    1.0f, 1.0f, //top right
+            left,bottom+height,          0.0f, 1.0f, //top left
+            //quit button
+            //positions                 texture coordinates
+            left_quit, bottom_quit,                0.0f, 0.0f, //bottom left
+            left_quit+width,bottom_quit,           1.0f, 0.0f, //bottomright
+            left_quit+width,bottom_quit+height,    1.0f, 1.0f, //top right
+            left_quit,bottom_quit+height,          0.0f, 1.0f //top left
+        };
 
-        // //texture coordinate attributes
-        // glEnableVertexAttribArray(3);
-        // glVertexAttribPointer(3, 2, //number of coordinates for a texture coordinate
-        //     GL_FLOAT, GL_FALSE, 4*sizeof(float), //size of each vertex
-        //     (void*)(2*sizeof(float)));//where texture coordinate starts
-        program_.make_vertex_buffer(vertices, sizeof(vertices), 2, 3);
+  
+        //create buffer to store vertices (position and texture)
+        program_game_.add_vertex_buffer(vertices_mm, sizeof(vertices_mm), 0, 1);
+        program_menu_.add_vertex_buffer(vertices_game, sizeof(vertices_game), 2, 3);
+
 
         //stores snake head image
         constexpr unsigned int imDims = 32;
@@ -157,12 +199,40 @@ public:
             std::cout << "Could not load apple image. " << std::endl;
             exit(0);
         }
-        
         //create apple texture
         Texture texture_apple(image_apple_, 3, imDims, imDims);
 
 
-        program_.use();
+        //load play button texture
+        unsigned int imWidth = 64;
+        unsigned int imHeight = 32;
+        unsigned char* image = new unsigned char[imWidth*imHeight*4];
+        load_image("play", image, imWidth, imHeight);
+        if(!image)
+        {
+            std::cout << "could not load play image" << std::endl;
+            exit(0);
+        }
+        Texture texture_play(image, 0, imWidth, imHeight);
+
+        //load quit button texture
+        load_image("quit", image, imWidth, imHeight);
+        if(!image)
+        {
+            std::cout << "could not load play image" << std::endl;
+            exit(0);
+        }
+        Texture texture_quit(image, 1, imWidth, imHeight);
+
+        //use program
+        program_menu_.use();
+        program_game_.use();
+
+
+        //set shader variable for selecting main menu buttons
+        glUniform1i(glGetUniformLocation(program_menu_.id(), "uPlaySelected"), 1);
+
+
     }
 
     ~Game()
@@ -254,35 +324,75 @@ public:
     //render the game
     void render_game()
     {
-        program_.use();
+        if(in_menu_)
+        {
 
-        //render snake head
-        glEnableVertexAttribArray(2);
-        glEnableVertexAttribArray(3); 
-        glActiveTexture(GL_TEXTURE2);
-        glUniform1i(glGetUniformLocation(program_.id(), "texture"), 2);
-        glUniform2f(glGetUniformLocation(program_.id(), "uPos"), x_, y_);
+            // program_.attach_shaders(program_.get_shader(0), program_.get_shader(1));
+            // program_menu_.enable_vertex_array(0);
+            glEnableVertexAttribArray(0);
+            glEnableVertexAttribArray(1); 
+            program_menu_.use();
+            
+
+            if(play_button_selected())
+            {
+                glUniform1i(glGetUniformLocation(program_menu_.id(), "uPlaySelected"), 1);
+
+            }else{
+                glUniform1i(glGetUniformLocation(program_menu_.id(), "uPlaySelected"), 0);
+            }
+            glActiveTexture(GL_TEXTURE0); //activate texture slot 0 for rendering play button
+            glUniform1i(glGetUniformLocation(program_menu_.id(), "texture"), 0); //update texture variable to play's image
+            glDrawArrays(GL_QUADS, 0, 4); //draw play button
+            
+            if(!play_button_selected())
+            {
+                glUniform1i(glGetUniformLocation(program_menu_.id(), "uPlaySelected"), 1);
+
+            }else{
+                glUniform1i(glGetUniformLocation(program_menu_.id(), "uPlaySelected"), 0);
+            }
+            glActiveTexture(GL_TEXTURE1); //activate texture slot 1 for rendering quit button
+            glUniform1i(glGetUniformLocation(program_menu_.id(), "texture"), 1);//update texture variable to quit's image
+            glDrawArrays(GL_QUADS, 4, 4); //draw buffer
+            glDisableVertexAttribArray(0); 
+            glDisableVertexAttribArray(1);    
+
+        }else //in game
+        {
+            std::cout << "in game" << std::endl;
+            // program_game_.enable_vertex_array(1);
+            // program_.attach_shaders(program_.get_shader(2), program_.get_shader(3));
+            // program_.use();
+            // glEnableVertexAttribArray(2);
+            // glEnableVertexAttribArray(3); 
+            program_game_.use();
+            
+            // program_.enable_vertex_array(1);
+
+            //render snake head
+            glActiveTexture(GL_TEXTURE2);
+            glUniform1i(glGetUniformLocation(program_game_.id(), "texture"), 2);
+            glUniform2f(glGetUniformLocation(program_game_.id(), "uPos"), x_, y_);
+
+            glDrawArrays(GL_QUADS, 0, 4);
         
+            //render apple
+            glActiveTexture(GL_TEXTURE3);
+            glUniform1i(glGetUniformLocation(program_game_.id(), "texture"), 3);
+            glUniform2f(glGetUniformLocation(program_game_.id(), "uPos"), x_apple_, y_apple_);
 
+            glDrawArrays(GL_QUADS, 4, 4);
+            glDisableVertexAttribArray(2); 
+            glDisableVertexAttribArray(3);      
+            // move snake
+            x_ += velocity_x_;
+            y_ += velocity_y_;
+            // std::cout << x_ << std::endl;
 
-        glDrawArrays(GL_QUADS, 0, 4);
-     
-
-        //render apple
-        glActiveTexture(GL_TEXTURE3);
-        glUniform1i(glGetUniformLocation(program_.id(), "texture"), 3);
-        glUniform2f(glGetUniformLocation(program_.id(), "uPos"), x_apple_, y_apple_);
-
-        glDrawArrays(GL_QUADS, 4, 4);
-        glDisableVertexAttribArray(2); 
-        glDisableVertexAttribArray(3); 
-
-        // move snake
-        x_ += velocity_x_;
-        y_ += velocity_y_;
-        // std::cout << x_ << std::endl;
-
-        check_collision();
+            check_collision();
+        }
+        // program_.use();
 
     }
 
@@ -300,6 +410,8 @@ public:
         y_apple_ = 400.0f;
     }
 
+    
+
 
 
 private:
@@ -316,8 +428,8 @@ private:
     void check_collision()
     {
         //check walls
-        if(x_ <= 0  || x_ >= window_width_-width_
-            || y_ <= 0 || y_ >= window_height_ - width_ - score_area_height_)
+        if(x_ <= 0  || x_ >= window_width_-entity_width_
+            || y_ <= 0 || y_ >= window_height_ - entity_width_ - score_area_height_)
         {
             // game_over_ = true;
             process_game_over();
@@ -325,8 +437,8 @@ private:
         }
 
         //check apple collision
-        if(x_ <= x_apple_ + width_ && x_ >= x_apple_ - width_ 
-            && y_ <= y_apple_ + width_ && y_ >= y_apple_ - width_)
+        if(x_ <= x_apple_ + entity_width_ && x_ >= x_apple_ - entity_width_ 
+            && y_ <= y_apple_ + entity_width_ && y_ >= y_apple_ - entity_width_)
         {
             //increase score
             ++score_;
@@ -355,7 +467,7 @@ private:
 
     bool play_button_selected_;
     bool in_menu_;
-    float width_; //width of single entities (snake head, apple)
+    float entity_width_; //width of single gameplay entities (snake head, apple)
     const float velocity_;
     float velocity_x_; //velocity of snake in x direction
     float velocity_y_; //velocity of snake in y direction
@@ -365,9 +477,13 @@ private:
     float y_apple_; //y position of apple
     unsigned int length_; //length of the snake
     int score_; //user's score
-    const std::string vs_code;
-    const std::string fs_code;
-    Program program_; //program for the game
+    const std::string vs_code_game_;
+    const std::string fs_code_game_;
+    const std::string vs_code_mm_;
+    const std::string fs_code_mm_;
+
+    Program program_game_; //program for the game
+    Program program_menu_; //program for the menu
     unsigned char* image_snake_head_;
     unsigned char* image_apple_;
     enum Direction { LEFT, RIGHT, UP, DOWN};
