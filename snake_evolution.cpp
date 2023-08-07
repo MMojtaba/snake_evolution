@@ -156,7 +156,7 @@ unsigned int program_render_mm()
     // unsigned char* image_play = new unsigned char[imWidth*imHeight*4];
     unsigned char* image_play = new unsigned char[imWidth*imHeight*4];
 
-    load_image("./images/play.bmp", image_play, imWidth, imHeight);
+    load_image("play", image_play, imWidth, imHeight);
     if(!image_play)
     {
         std::cout << "could not load play image" << std::endl;
@@ -164,7 +164,7 @@ unsigned int program_render_mm()
     }
 
     unsigned char* image_quit = new unsigned char[imWidth*imHeight*4];
-    load_image("./images/quit.bmp", image_quit, imWidth, imHeight);
+    load_image("quit", image_quit, imWidth, imHeight);
     
 
     //create play texture

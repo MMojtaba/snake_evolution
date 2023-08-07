@@ -16,7 +16,8 @@ add_executable(run_snake_evolution snake_evolution.cpp
     include/shader_code.hpp 
     include/program.hpp include/game.hpp 
     include/utils.hpp
-    include/texture.hpp)
+    include/texture.hpp
+    include/image_data.hpp)
     
 target_link_libraries(run_snake_evolution glfw)
 target_link_libraries(run_snake_evolution GL)

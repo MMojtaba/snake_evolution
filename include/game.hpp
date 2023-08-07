@@ -103,7 +103,8 @@ public:
         image_snake_head_ = new unsigned char[imDims*imDims*4];
 
         //load snake facing down image
-        load_image("./images/snake_down.bmp", image_snake_head_, imDims, imDims);
+        load_image("snake_down", image_snake_head_, imDims, imDims);
+
         if(!image_snake_head_)
         {
             std::cout << "Could not load snake head image. " << std::endl;
@@ -114,7 +115,7 @@ public:
         head_down_tex_id_ = texture_snake_head_down.id();
 
         //load snake facing right image
-        load_image("./images/snake_right.bmp", image_snake_head_, imDims, imDims);
+        load_image("snake_right", image_snake_head_, imDims, imDims);
         if(!image_snake_head_)
         {
             std::cout << "Could not load snake head image. " << std::endl;
@@ -125,7 +126,7 @@ public:
         head_right_tex_id_ = texture_snake_head_right.id();
 
         //load snake facing right image
-        load_image("./images/snake_left.bmp", image_snake_head_, imDims, imDims);
+        load_image("snake_left", image_snake_head_, imDims, imDims);
         if(!image_snake_head_)
         {
             std::cout << "Could not load snake head image. " << std::endl;
@@ -136,7 +137,7 @@ public:
         head_left_tex_id_ = texture_snake_head_left.id();
 
         //load snake facing up image
-        load_image("./images/snake_head.bmp", image_snake_head_, imDims, imDims);
+        load_image("snake_head", image_snake_head_, imDims, imDims);
         if(!image_snake_head_)
         {
             std::cout << "Could not load snake head image. " << std::endl;
@@ -149,7 +150,7 @@ public:
 
         //load apple image
         image_apple_ = new unsigned char[imDims*imDims*4];
-        load_image("./images/apple.bmp", image_apple_, imDims, imDims);
+        load_image("apple", image_apple_, imDims, imDims);
         if(!image_apple_)
         {
             std::cout << "Could not load apple image. " << std::endl;
@@ -165,8 +166,8 @@ public:
 
     ~Game()
     {
-        delete image_snake_head_;
-        delete image_apple_;
+        // delete image_snake_head_;
+        // delete image_apple_;
     }
 
     //process user pressing up arrow key
