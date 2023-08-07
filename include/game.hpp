@@ -59,9 +59,6 @@ public:
         glBindAttribLocation(program_.id(), 2, "aPos"); //vertex position attribute
         glBindAttribLocation(program_.id(), 3, "aTexCoord"); //texture coordinate attribute
     
-        // glMatrixMode(GL_PROJECTION);
-        // glOrtho(0, 800, 0, 600, -1, 1);
-
         //attach shaders
         program_.attach_shaders();
 
@@ -101,7 +98,7 @@ public:
             GL_FLOAT, GL_FALSE, 4*sizeof(float), //size of each vertex
             (void*)(2*sizeof(float)));//where texture coordinate starts
 
-        //load snake image
+        //load snake facing up image
         constexpr unsigned int imDims = 32;
         image_snake_head_ = new unsigned char[imDims*imDims*4];
         load_image("./images/snake_head.bmp", image_snake_head_, imDims, imDims);
@@ -110,7 +107,44 @@ public:
             std::cout << "Could not load snake head image. " << std::endl;
             exit(0);
         }
-        
+        //add image to a texture object
+        Texture texture_snake_head_up(image_snake_head_, 2, imDims, imDims);
+        head_up_tex_id_ = texture_snake_head_up.id();
+
+        //load snake facing down image
+        load_image("./images/snake_head.bmp", image_snake_head_, imDims, imDims);
+        if(!image_snake_head_)
+        {
+            std::cout << "Could not load snake head image. " << std::endl;
+            exit(0);
+        }
+        //add image to a texture object
+        Texture texture_snake_head_down(image_snake_head_, 2, imDims, imDims);
+        head_down_tex_id_ = texture_snake_head_down.id();
+
+        //load snake facing right image
+        load_image("./images/snake_head.bmp", image_snake_head_, imDims, imDims);
+        if(!image_snake_head_)
+        {
+            std::cout << "Could not load snake head image. " << std::endl;
+            exit(0);
+        }
+        //add image to a texture object
+        Texture texture_snake_head_right(image_snake_head_, 2, imDims, imDims);
+        head_right_tex_id_ = texture_snake_head_right.id();
+
+        //load snake facing right image
+        load_image("./images/snake_head.bmp", image_snake_head_, imDims, imDims);
+        if(!image_snake_head_)
+        {
+            std::cout << "Could not load snake head image. " << std::endl;
+            exit(0);
+        }
+        //add image to a texture object
+        Texture texture_snake_head_left(image_snake_head_, 2, imDims, imDims);
+        head_left_tex_id_ = texture_snake_head_left.id();
+
+
         //load apple image
         image_apple_ = new unsigned char[imDims*imDims*4];
         load_image("./images/apple.bmp", image_apple_, imDims, imDims);
@@ -119,26 +153,11 @@ public:
             std::cout << "Could not load apple image. " << std::endl;
             exit(0);
         }
-
-        //create snake texture
-        Texture texture_snake_head(image_snake_head_, 2, imDims, imDims);
-        // unsigned int texture_snake_head;
-        // glActiveTexture(GL_TEXTURE2);
-        // glGenTextures(1, &texture_snake_head);
-        // glBindTexture(GL_TEXTURE_2D, texture_snake_head);
-        // set_texture_param();
-        // glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, imDims, imDims, 0, GL_RGBA, GL_UNSIGNED_BYTE, image_snake_head_);
         
-
-        // //create apple texture
+        //create apple texture
         Texture texture_apple(image_apple_, 3, imDims, imDims);
-        // unsigned int texture_apple;
-        // glActiveTexture(GL_TEXTURE3);
-        // glGenTextures(1, &texture_apple);
-        // glBindTexture(GL_TEXTURE_2D, texture_apple);
-        // set_texture_param();
-        // glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, imDims, imDims, 0, GL_RGBA, GL_UNSIGNED_BYTE, image_apple_);
-        
+
+
         program_.use();
     }
 
@@ -157,6 +176,7 @@ public:
             velocity_x_ = 0;
             velocity_y_ = velocity_;
             snake_dir_ = UP;
+            rotate_head(head_up_tex_id_);
         }
         
     }
@@ -170,6 +190,7 @@ public:
             velocity_x_ = 0;
             velocity_y_ = -velocity_;
             snake_dir_ = DOWN;
+            rotate_head(head_down_tex_id_);
         }
     }
 
@@ -182,6 +203,7 @@ public:
             velocity_x_ = velocity_;
             velocity_y_ = 0;
             snake_dir_ = RIGHT;
+            rotate_head(head_right_tex_id_);
         }
     }
 
@@ -195,6 +217,7 @@ public:
             velocity_x_ = -velocity_;
             velocity_y_ = 0;
             snake_dir_ = LEFT;
+            rotate_head(head_left_tex_id_);
         }
     }
 
@@ -317,6 +340,13 @@ private:
         in_menu_ = true;
     }
 
+    //updates snake head's texture for rotation effect
+    void rotate_head(unsigned int tex_id)
+    {
+        glActiveTexture(GL_TEXTURE2);
+        glBindTexture(GL_TEXTURE_2D, tex_id);  
+    }
+
 
 
     bool play_button_selected_;
@@ -342,6 +372,11 @@ private:
     const unsigned int window_height_;
     const unsigned int score_area_height_;
     bool game_over_; //whether the user lost the game
+    unsigned int head_up_tex_id_;
+    unsigned int head_down_tex_id_;
+    unsigned int head_right_tex_id_;
+    unsigned int head_left_tex_id_;
+
 };
 
 

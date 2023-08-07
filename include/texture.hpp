@@ -12,13 +12,22 @@ public:
         width_(width),
         height_(height)
     {
+        //activate texture slot
         glActiveTexture(GL_TEXTURE0+slot_);
+        //create and bind a texture object to this slot
         glGenTextures(1, &id_);
         glBindTexture(GL_TEXTURE_2D, id_);
+        //set texture parameters required for rendering a texture
         set_texture_params();
+        //add the image to this texture slot
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width_, height_, 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
+    }
 
 
+
+    unsigned int id()
+    {
+        return id_;
     }
 
 
