@@ -15,7 +15,7 @@ class Game
 public:
     Game(unsigned int win_width, unsigned int win_height): 
         play_button_selected_(true),
-        in_menu_(false), //TODO change back to true
+        in_menu_(true), //TODO change back to true
         window_width_(win_width),
         window_height_(win_height),
         score_area_height_(100),
@@ -47,16 +47,16 @@ public:
                 "gl_FragColor = color;\n" 
             "}"
         ),
-        vs_code_mm_(
-            "#version 120\n"
-            "attribute vec2 aPos;\n"
-            "attribute vec2 aTexCoord;\n"
-            "varying vec2 TexCoord;\n"
-            "void main() {\n"
-                "gl_Position = vec4(aPos, 1.0, 1.0);\n"
-                "TexCoord = vec2(aTexCoord.x, aTexCoord.y);\n"
-            "}"
-        ),
+        // vs_code_mm_(
+        //     "#version 120\n"
+        //     "attribute vec2 aPos;\n"
+        //     "attribute vec2 aTexCoord;\n"
+        //     "varying vec2 TexCoord;\n"
+        //     "void main() {\n"
+        //         "gl_Position = vec4(aPos, 1.0, 1.0);\n"
+        //         "TexCoord = vec2(aTexCoord.x, aTexCoord.y);\n"
+        //     "}"
+        // ),
         fs_code_mm_(
             "#version 120\n"
             "varying vec2 TexCoord;\n"
@@ -77,7 +77,7 @@ public:
         reset(); 
 
         //create shaders
-        program_menu_.create_shaders(vs_code_mm_.c_str(), fs_code_mm_.c_str());
+        program_menu_.create_shaders(vs_code_game_.c_str(), fs_code_mm_.c_str());
         program_game_.create_shaders(vs_code_game_.c_str(), fs_code_game_.c_str());
 
 
@@ -132,12 +132,11 @@ public:
         };
 
         //vertex data for main menu
-        float left = -0.2f;
-        float bottom = 0.0f;
-        float width = 0.4f;
-        float height = 0.2f;
-        float left_quit = -0.2f;
-        float bottom_quit = -0.25f;
+        float width = 170.0f;
+        float height = 60.0f;
+        float left = (window_width_ - width)/2.0f;
+        float bottom = window_height_/2.0f ;
+        float bottom_quit = bottom - height - 20.0f;
 
         float vertices_mm[] = {
             //play button
@@ -148,13 +147,30 @@ public:
             left,bottom+height,          0.0f, 1.0f, //top left
             //quit button
             //positions                 texture coordinates
-            left_quit, bottom_quit,                0.0f, 0.0f, //bottom left
-            left_quit+width,bottom_quit,           1.0f, 0.0f, //bottomright
-            left_quit+width,bottom_quit+height,    1.0f, 1.0f, //top right
-            left_quit,bottom_quit+height,          0.0f, 1.0f //top left
+            left, bottom_quit,                0.0f, 0.0f, //bottom left
+            left+width,bottom_quit,           1.0f, 0.0f, //bottomright
+            left+width,bottom_quit+height,    1.0f, 1.0f, //top right
+            left,bottom_quit+height,          0.0f, 1.0f, //top left
+            //line seperating score and game area
+            0.0f,  top_area_begin,                    0.0f, 0.0f,
+            (float)window_width_, top_area_begin,      0.0f, 0.1f,
+            //score text
+            16.0f, top_area_begin+entity_width_,      0.0f, 0.0f, //bottom left
+            16.0f+entity_width_*3.0f, top_area_begin+entity_width_, 1.0f, 0.0f,//bottom right
+            16.0f+entity_width_*3.0f, top_area_begin+entity_width_*2.0f, 1.0f, 1.0f, //top right
+            16.0f, top_area_begin+entity_width_*2.0f, 0.0f, 1.0f, //top left
+            //first score digit
+            16.0f+entity_width_*4.0f, top_area_begin+entity_width_,      0.0f, 0.0f, //bottom left
+            16.0f+entity_width_*5.0f, top_area_begin+entity_width_, 1.0f, 0.0f,//bottom right
+            16.0f+entity_width_*5.0f, top_area_begin+entity_width_*2.0f, 1.0f, 1.0f, //top right
+            16.0f+entity_width_*4.0f, top_area_begin+entity_width_*2.0f, 0.0f, 1.0f, //top left
+            //second score digit
+            entity_width_*6.0f, top_area_begin+entity_width_,      0.0f, 0.0f, //bottom left
+            entity_width_*7.0f, top_area_begin+entity_width_, 1.0f, 0.0f,//bottom right
+            entity_width_*7.0f, top_area_begin+entity_width_*2.0f, 1.0f, 1.0f, //top right
+            entity_width_*6.0f, top_area_begin+entity_width_*2.0f, 0.0f, 1.0f, //top left
         };
 
-  
         //create buffer to store vertices (position and texture)
         program_menu_.make_vertex_buffer(vertices_mm, sizeof(vertices_mm), 0, 1);
         program_game_.make_vertex_buffer(vertices_game, sizeof(vertices_game), 2, 3);
@@ -298,14 +314,17 @@ public:
 
 
 
+        ce();
 
         //use program
         program_menu_.use();
         program_game_.use();
 
+        ce();
 
         //set shader variable for selecting main menu buttons
-        glUniform1i(glGetUniformLocation(program_menu_.id(), "uPlaySelected"), 1);
+        // glUniform1i(glGetUniformLocation(program_menu_.id(), "uPlaySelected"), 1);
+        ce();
 
 
     }
@@ -327,6 +346,7 @@ public:
             //use main menu program
             program_menu_.use();
             
+
 
             if(play_button_selected())
             {
@@ -350,38 +370,24 @@ public:
             glUniform1i(glGetUniformLocation(program_menu_.id(), "texture"), 1);//update texture variable to quit's image
             glDrawArrays(GL_QUADS, 4, 4); //draw buffer
 
+            glUniform1i(glGetUniformLocation(program_menu_.id(), "uPlaySelected"), 0);
+            //render score
+            render_score(8);
+
         }else //in game
         {
             //use game program
             program_game_.use();
 
             //render snake head
-            // glActiveTexture(GL_TEXTURE2);
-            // glUniform1i(glGetUniformLocation(program_game_.id(), "texture"), 2);
-            // glUniform2f(glGetUniformLocation(program_game_.id(), "uPos"), x_, y_);
             activate_texture_game(2, x_, y_);
             glDrawArrays(GL_QUADS, 0, 4);
         
             //render apple
-            // glActiveTexture(GL_TEXTURE3);
-            // glUniform1i(glGetUniformLocation(program_game_.id(), "texture"), 3);
-            // glUniform2f(glGetUniformLocation(program_game_.id(), "uPos"), x_apple_, y_apple_);
             activate_texture_game(3, x_apple_, y_apple_);
             glDrawArrays(GL_QUADS, 4, 4);
 
-            //render line seperating score and game area
-            // glUniform2f(glGetUniformLocation(program_game_.id(), "uPos"), 0.0f, 0.0f);
-            // glLineWidth(6);
-            // glDrawArrays(GL_LINES, 8, 2);
-
-            //render score text
-            // glActiveTexture(GL_TEXTURE4);
-            // glUniform1i(glGetUniformLocation(program_game_.id(), "texture"), 4);
-            // glUniform2f(glGetUniformLocation(program_game_.id(), "uPos"), 0.0f, 0.0f);
-            // activate_texture_game(4, 0.0f, 0.0f);
-            // glDrawArrays(GL_QUADS, 10, 4);
-
-
+            //render score
             render_score(8);
 
 
@@ -397,6 +403,7 @@ public:
     //updates the score number shown
     void render_score(unsigned int arrayOffset)
     {
+        
         //render line seperating score and game area
         // glUniform2f(glGetUniformLocation(program_game_.id(), "uPos"), 0.0f, 0.0f);
         activate_texture_game(3, 0.0f, 0.0f);
@@ -430,9 +437,16 @@ public:
 
     void activate_texture_game(unsigned int slot, float posX, float posY)
     {
+        unsigned int prog_id;
+        if(in_menu_)
+        {
+            prog_id = program_menu_.id();
+        }else{
+            prog_id = program_game_.id();
+        }
         glActiveTexture(GL_TEXTURE0+slot);
-        glUniform1i(glGetUniformLocation(program_game_.id(), "texture"), slot);
-        glUniform2f(glGetUniformLocation(program_game_.id(), "uPos"), posX, posY);
+        glUniform1i(glGetUniformLocation(prog_id, "texture"), slot);
+        glUniform2f(glGetUniformLocation(prog_id, "uPos"), posX, posY);
     }
 
 
