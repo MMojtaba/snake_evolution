@@ -137,8 +137,8 @@ public:
 
   
         //create buffer to store vertices (position and texture)
-        program_game_.add_vertex_buffer(vertices_mm, sizeof(vertices_mm), 0, 1);
-        program_menu_.add_vertex_buffer(vertices_game, sizeof(vertices_game), 2, 3);
+        program_menu_.make_vertex_buffer(vertices_mm, sizeof(vertices_mm), 0, 1);
+        program_game_.make_vertex_buffer(vertices_game, sizeof(vertices_game), 2, 3);
 
 
         //stores snake head image
@@ -327,10 +327,7 @@ public:
         if(in_menu_)
         {
 
-            // program_.attach_shaders(program_.get_shader(0), program_.get_shader(1));
-            // program_menu_.enable_vertex_array(0);
-            glEnableVertexAttribArray(0);
-            glEnableVertexAttribArray(1); 
+            //use main menu program
             program_menu_.use();
             
 
@@ -355,44 +352,30 @@ public:
             glActiveTexture(GL_TEXTURE1); //activate texture slot 1 for rendering quit button
             glUniform1i(glGetUniformLocation(program_menu_.id(), "texture"), 1);//update texture variable to quit's image
             glDrawArrays(GL_QUADS, 4, 4); //draw buffer
-            glDisableVertexAttribArray(0); 
-            glDisableVertexAttribArray(1);    
 
         }else //in game
         {
-            std::cout << "in game" << std::endl;
-            // program_game_.enable_vertex_array(1);
-            // program_.attach_shaders(program_.get_shader(2), program_.get_shader(3));
-            // program_.use();
-            // glEnableVertexAttribArray(2);
-            // glEnableVertexAttribArray(3); 
+            //use game program
             program_game_.use();
-            
-            // program_.enable_vertex_array(1);
 
             //render snake head
             glActiveTexture(GL_TEXTURE2);
             glUniform1i(glGetUniformLocation(program_game_.id(), "texture"), 2);
             glUniform2f(glGetUniformLocation(program_game_.id(), "uPos"), x_, y_);
-
             glDrawArrays(GL_QUADS, 0, 4);
         
             //render apple
             glActiveTexture(GL_TEXTURE3);
             glUniform1i(glGetUniformLocation(program_game_.id(), "texture"), 3);
             glUniform2f(glGetUniformLocation(program_game_.id(), "uPos"), x_apple_, y_apple_);
-
             glDrawArrays(GL_QUADS, 4, 4);
-            glDisableVertexAttribArray(2); 
-            glDisableVertexAttribArray(3);      
+
             // move snake
             x_ += velocity_x_;
             y_ += velocity_y_;
-            // std::cout << x_ << std::endl;
 
             check_collision();
         }
-        // program_.use();
 
     }
 
