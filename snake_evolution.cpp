@@ -35,8 +35,6 @@ Game game(window_width,window_height);
 int main()
 {
     
-    
-
     //check for errors
     ce();
 
@@ -47,15 +45,17 @@ int main()
         //clear the window's content
         clear_window();
 
+        //render game
         game.render_game();
         
-
+        //check for errors
         ce();
 
         glfwSwapBuffers(window);//swap buffer
         glfwPollEvents();//poll for events (such as quit)
     }
   
+    //print opengl version information TODO remove
     print_gl_version();
 
     //clean up
@@ -73,57 +73,10 @@ int main()
 
 //End of main ---------------------------------------------------------------------------------
 
-
-
-
-
-
-
-
 //Handle user inputs
 void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
-    //for debugging: TODO remove
-    if(key==GLFW_KEY_BACKSLASH && action == GLFW_PRESS)
-    {
-        game.change_in_menu();
-    }
-
-    //escape key: close game
-    if(key == GLFW_KEY_ESCAPE)
-    {
-        glfwSetWindowShouldClose(window, true);   
-    }
-
-    //up and down switches the selected button in the main menu
-    if((key == GLFW_KEY_UP && action == GLFW_PRESS) || (key == GLFW_KEY_DOWN && action == GLFW_PRESS))
-    {
-        game.change_play_button_selected();
-    }
-
-    //start game if enter is pressed while selecting play in the menu
-    if(game.in_menu() && key == GLFW_KEY_ENTER && game.play_button_selected())
-    {
-        game.reset();
-        game.change_in_menu();
-    } else if(game.in_menu() && key == GLFW_KEY_ENTER && !game.play_button_selected())
-    {
-        //quit game if quit is selected in the menu
-        glfwSetWindowShouldClose(window, true);
-    }
-
-    //process directions when in game
-    if(!game.in_menu())
-    {
-        if(key == GLFW_KEY_UP && action == GLFW_PRESS)
-            game.process_up();
-        else if(key == GLFW_KEY_DOWN && action == GLFW_PRESS)
-            game.process_down();
-        else if(key == GLFW_KEY_RIGHT && action == GLFW_PRESS)
-            game.process_right();
-        else if(key == GLFW_KEY_LEFT && action == GLFW_PRESS)
-            game.process_left();
-    }
+    game.process_input(window, key, action);
 }
 
 //initializes the required components (glfw, glew)
@@ -170,8 +123,6 @@ GLFWwindow* init()
 
     return window;
 }
-
-
 
 
 //clears window's content

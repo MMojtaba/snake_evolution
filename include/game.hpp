@@ -391,6 +391,53 @@ public:
         y_ = 250.0f; 
         x_apple_ = 500.0f;
         y_apple_ = 400.0f;
+        rotate_head(head_up_tex_id_);//reset snake texture
+    }
+
+    //handle user input
+    void process_input(GLFWwindow* window, int key, int action)
+    {
+        //for debugging: TODO remove
+        if(key==GLFW_KEY_BACKSLASH && action == GLFW_PRESS)
+        {
+            change_in_menu();
+        }
+
+        //escape key: close game
+        if(key == GLFW_KEY_ESCAPE)
+        {
+            glfwSetWindowShouldClose(window, true);   
+        }
+
+        //up and down switches the selected button in the main menu
+        if((key == GLFW_KEY_UP && action == GLFW_PRESS) || (key == GLFW_KEY_DOWN && action == GLFW_PRESS))
+        {
+            change_play_button_selected();
+        }
+
+        //start game if enter is pressed while selecting play in the menu
+        if(in_menu() && key == GLFW_KEY_ENTER && play_button_selected())
+        {
+            reset();
+            change_in_menu();
+        } else if(in_menu() && key == GLFW_KEY_ENTER && !play_button_selected())
+        {
+            //quit game if quit is selected in the menu
+            glfwSetWindowShouldClose(window, true);
+        }
+
+        //process directions when in game
+        if(!in_menu())
+        {
+            if(key == GLFW_KEY_UP && action == GLFW_PRESS)
+                process_up();
+            else if(key == GLFW_KEY_DOWN && action == GLFW_PRESS)
+                process_down();
+            else if(key == GLFW_KEY_RIGHT && action == GLFW_PRESS)
+                process_right();
+            else if(key == GLFW_KEY_LEFT && action == GLFW_PRESS)
+                process_left();
+        }
     }
 
     
