@@ -101,7 +101,29 @@ unsigned char* get_image(std::string name)
         return image_snake_left;
     }else if(name == "score"){
         return image_score;
-    }else{
+    }else if(name == "zero"){
+        return image_zero;
+    }else if(name == "one"){
+        return image_one;
+    }else if(name == "two"){
+        return image_two;
+    }else if(name == "three"){
+        return image_three;
+    }else if(name == "four"){
+        return image_four;
+    }else if(name == "five"){
+        return image_five;
+    }else if(name == "six"){
+        return image_six;
+    }else if(name == "seven"){
+        return image_seven;
+    }else if(name == "eight"){
+        return image_eight;
+    }else if(name == "nine"){
+        return image_nine;
+    }
+    
+    else{
         return image_apple;
     }
 }

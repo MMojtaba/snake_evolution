@@ -15,7 +15,7 @@ class Game
 public:
     Game(unsigned int win_width, unsigned int win_height): 
         play_button_selected_(true),
-        in_menu_(true), //TODO change back to true
+        in_menu_(false), //TODO change back to true
         window_width_(win_width),
         window_height_(win_height),
         score_area_height_(100),
@@ -96,6 +96,7 @@ public:
         program_menu_.attach_shaders(); //game
 
         //vertex data for snake and apple
+        float top_area_begin = (float)window_height_-(float)score_area_height_;
         float vertices_game[] = 
         {
             //snake head
@@ -105,11 +106,29 @@ public:
             entity_width_, entity_width_,         1.0f, 1.0f, //top right
             0.0f, entity_width_,           0.0f, 1.0f, //top left
             //apple
-            //positions             texture coordinates
-            0.0f, 0.0f,             0.0f, 0.0f, //bottom left
-            entity_width_, 0.0f,           1.0f, 0.0f, //bottom right
-            entity_width_, entity_width_,           1.0f, 1.0f, //top right
-            0.0f, entity_width_,             0.0f, 1.0f //top left
+            //positions                     texture coordinates
+            0.0f, 0.0f,                     0.0f, 0.0f, //bottom left
+            entity_width_, 0.0f,            1.0f, 0.0f, //bottom right
+            entity_width_, entity_width_,   1.0f, 1.0f, //top right
+            0.0f, entity_width_,            0.0f, 1.0f, //top left
+            //line seperating score and game area
+            0.0f,  top_area_begin,                    0.0f, 0.0f,
+            (float)window_width_, top_area_begin,      0.0f, 0.1f,
+            //score text
+            16.0f, top_area_begin+entity_width_,      0.0f, 0.0f, //bottom left
+            16.0f+entity_width_*3.0f, top_area_begin+entity_width_, 1.0f, 0.0f,//bottom right
+            16.0f+entity_width_*3.0f, top_area_begin+entity_width_*2.0f, 1.0f, 1.0f, //top right
+            16.0f, top_area_begin+entity_width_*2.0f, 0.0f, 1.0f, //top left
+            //first score digit
+            16.0f+entity_width_*4.0f, top_area_begin+entity_width_,      0.0f, 0.0f, //bottom left
+            16.0f+entity_width_*5.0f, top_area_begin+entity_width_, 1.0f, 0.0f,//bottom right
+            16.0f+entity_width_*5.0f, top_area_begin+entity_width_*2.0f, 1.0f, 1.0f, //top right
+            16.0f+entity_width_*4.0f, top_area_begin+entity_width_*2.0f, 0.0f, 1.0f, //top left
+            //second score digit
+            entity_width_*6.0f, top_area_begin+entity_width_,      0.0f, 0.0f, //bottom left
+            entity_width_*7.0f, top_area_begin+entity_width_, 1.0f, 0.0f,//bottom right
+            entity_width_*7.0f, top_area_begin+entity_width_*2.0f, 1.0f, 1.0f, //top right
+            entity_width_*6.0f, top_area_begin+entity_width_*2.0f, 0.0f, 1.0f, //top left
         };
 
         //vertex data for main menu
@@ -219,10 +238,66 @@ public:
         load_image("quit", image, imWidth, imHeight);
         if(!image)
         {
-            std::cout << "could not load play image" << std::endl;
+            std::cout << "could not load quit image" << std::endl;
             exit(0);
         }
         Texture texture_quit(image, 1, imWidth, imHeight);
+        
+        //load score texture
+        load_image("score", image, imWidth, imHeight);
+        if(!image)
+        {
+            std::cout << "could not load score image" << std::endl;
+            exit(0);
+        }
+        Texture texture_score(image, 4, imWidth, imHeight);
+
+        //load digits (0 to 9) textures
+        unsigned int imDigit_width = 4;
+        unsigned int imDigit_height = 8;
+        unsigned char* image_digit = new unsigned char[imDigit_width*imDigit_height*4];
+        load_image("zero", image_digit, imDigit_width, imDigit_height);
+        Texture texture_digit0(image_digit, 5, imDigit_width, imDigit_height);
+        digits_[0] = texture_digit0.id();
+
+        load_image("one", image_digit, imDigit_width, imDigit_height);
+        Texture texture_digit1(image_digit, 6, imDigit_width, imDigit_height);
+        digits_[1] = texture_digit1.id();
+
+        load_image("two", image_digit, imDigit_width, imDigit_height);
+        Texture texture_digit2(image_digit, 6, imDigit_width, imDigit_height);
+        digits_[2] = texture_digit2.id();
+
+        load_image("three", image_digit, imDigit_width, imDigit_height);
+        Texture texture_digit3(image_digit, 6, imDigit_width, imDigit_height);
+        digits_[3] = texture_digit3.id();
+
+        load_image("four", image_digit, imDigit_width, imDigit_height);
+        Texture texture_digit4(image_digit, 6, imDigit_width, imDigit_height);
+        digits_[4] = texture_digit4.id();
+
+        load_image("five", image_digit, imDigit_width, imDigit_height);
+        Texture texture_digit5(image_digit, 6, imDigit_width, imDigit_height);
+        digits_[5] = texture_digit5.id();
+
+        load_image("six", image_digit, imDigit_width, imDigit_height);
+        Texture texture_digit6(image_digit, 6, imDigit_width, imDigit_height);
+        digits_[6] = texture_digit6.id();
+
+        load_image("seven", image_digit, imDigit_width, imDigit_height);
+        Texture texture_digit7(image_digit, 6, imDigit_width, imDigit_height);
+        digits_[7] = texture_digit7.id();
+
+        load_image("eight", image_digit, imDigit_width, imDigit_height);
+        Texture texture_digit8(image_digit, 6, imDigit_width, imDigit_height);
+        digits_[8] = texture_digit8.id();
+
+        load_image("nine", image_digit, imDigit_width, imDigit_height);
+        Texture texture_digit9(image_digit, 6, imDigit_width, imDigit_height);
+        digits_[9] = texture_digit9.id();
+
+
+
 
         //use program
         program_menu_.use();
@@ -240,6 +315,127 @@ public:
         // delete image_snake_head_;
         // delete image_apple_;
     }
+
+    
+
+    //render the game
+    void render_game()
+    {
+        if(in_menu_)
+        {
+
+            //use main menu program
+            program_menu_.use();
+            
+
+            if(play_button_selected())
+            {
+                glUniform1i(glGetUniformLocation(program_menu_.id(), "uPlaySelected"), 1);
+
+            }else{
+                glUniform1i(glGetUniformLocation(program_menu_.id(), "uPlaySelected"), 0);
+            }
+            glActiveTexture(GL_TEXTURE0); //activate texture slot 0 for rendering play button
+            glUniform1i(glGetUniformLocation(program_menu_.id(), "texture"), 0); //update texture variable to play's image
+            glDrawArrays(GL_QUADS, 0, 4); //draw play button
+            
+            if(!play_button_selected())
+            {
+                glUniform1i(glGetUniformLocation(program_menu_.id(), "uPlaySelected"), 1);
+
+            }else{
+                glUniform1i(glGetUniformLocation(program_menu_.id(), "uPlaySelected"), 0);
+            }
+            glActiveTexture(GL_TEXTURE1); //activate texture slot 1 for rendering quit button
+            glUniform1i(glGetUniformLocation(program_menu_.id(), "texture"), 1);//update texture variable to quit's image
+            glDrawArrays(GL_QUADS, 4, 4); //draw buffer
+
+        }else //in game
+        {
+            //use game program
+            program_game_.use();
+
+            //render snake head
+            // glActiveTexture(GL_TEXTURE2);
+            // glUniform1i(glGetUniformLocation(program_game_.id(), "texture"), 2);
+            // glUniform2f(glGetUniformLocation(program_game_.id(), "uPos"), x_, y_);
+            activate_texture_game(2, x_, y_);
+            glDrawArrays(GL_QUADS, 0, 4);
+        
+            //render apple
+            // glActiveTexture(GL_TEXTURE3);
+            // glUniform1i(glGetUniformLocation(program_game_.id(), "texture"), 3);
+            // glUniform2f(glGetUniformLocation(program_game_.id(), "uPos"), x_apple_, y_apple_);
+            activate_texture_game(3, x_apple_, y_apple_);
+            glDrawArrays(GL_QUADS, 4, 4);
+
+            //render line seperating score and game area
+            // glUniform2f(glGetUniformLocation(program_game_.id(), "uPos"), 0.0f, 0.0f);
+            // glLineWidth(6);
+            // glDrawArrays(GL_LINES, 8, 2);
+
+            //render score text
+            // glActiveTexture(GL_TEXTURE4);
+            // glUniform1i(glGetUniformLocation(program_game_.id(), "texture"), 4);
+            // glUniform2f(glGetUniformLocation(program_game_.id(), "uPos"), 0.0f, 0.0f);
+            // activate_texture_game(4, 0.0f, 0.0f);
+            // glDrawArrays(GL_QUADS, 10, 4);
+
+
+            render_score(8);
+
+
+            // move snake
+            x_ += velocity_x_;
+            y_ += velocity_y_;
+
+            check_collision();
+        }
+
+    }
+
+    //updates the score number shown
+    void render_score(unsigned int arrayOffset)
+    {
+        //render line seperating score and game area
+        // glUniform2f(glGetUniformLocation(program_game_.id(), "uPos"), 0.0f, 0.0f);
+        activate_texture_game(3, 0.0f, 0.0f);
+        glLineWidth(6);
+        glDrawArrays(GL_LINES, arrayOffset, 2);
+        arrayOffset += 2;
+
+        //render score text
+        activate_texture_game(4, 0.0f, 0.0f);
+        glDrawArrays(GL_QUADS, arrayOffset, 4);
+        arrayOffset += 4;
+
+
+        //get the first and second digit as a number
+        unsigned int digit1 = score_ / 10;
+        unsigned int digit2 = score_ % 10;
+
+        //bind the first digit to its texture slot and activate it
+        activate_texture_game(5, 0.0f, 0.0f);
+        glBindTexture(GL_TEXTURE_2D, digits_[digit1]);  
+        glDrawArrays(GL_QUADS, arrayOffset, 4);
+        arrayOffset += 4;
+
+        //bind the first second to its texture slot and activate it
+        activate_texture_game(6, 0.0f, 0.0f);
+        glBindTexture(GL_TEXTURE_2D, digits_[digit2]);  
+        glDrawArrays(GL_QUADS, arrayOffset, 4);
+        arrayOffset += 4;
+
+    }
+
+    void activate_texture_game(unsigned int slot, float posX, float posY)
+    {
+        glActiveTexture(GL_TEXTURE0+slot);
+        glUniform1i(glGetUniformLocation(program_game_.id(), "texture"), slot);
+        glUniform2f(glGetUniformLocation(program_game_.id(), "uPos"), posX, posY);
+    }
+
+
 
     //process user pressing up arrow key
     void process_up()
@@ -319,64 +515,6 @@ public:
     void change_in_menu()
     {
         in_menu_ = !in_menu_;
-    }
-
-    //render the game
-    void render_game()
-    {
-        if(in_menu_)
-        {
-
-            //use main menu program
-            program_menu_.use();
-            
-
-            if(play_button_selected())
-            {
-                glUniform1i(glGetUniformLocation(program_menu_.id(), "uPlaySelected"), 1);
-
-            }else{
-                glUniform1i(glGetUniformLocation(program_menu_.id(), "uPlaySelected"), 0);
-            }
-            glActiveTexture(GL_TEXTURE0); //activate texture slot 0 for rendering play button
-            glUniform1i(glGetUniformLocation(program_menu_.id(), "texture"), 0); //update texture variable to play's image
-            glDrawArrays(GL_QUADS, 0, 4); //draw play button
-            
-            if(!play_button_selected())
-            {
-                glUniform1i(glGetUniformLocation(program_menu_.id(), "uPlaySelected"), 1);
-
-            }else{
-                glUniform1i(glGetUniformLocation(program_menu_.id(), "uPlaySelected"), 0);
-            }
-            glActiveTexture(GL_TEXTURE1); //activate texture slot 1 for rendering quit button
-            glUniform1i(glGetUniformLocation(program_menu_.id(), "texture"), 1);//update texture variable to quit's image
-            glDrawArrays(GL_QUADS, 4, 4); //draw buffer
-
-        }else //in game
-        {
-            //use game program
-            program_game_.use();
-
-            //render snake head
-            glActiveTexture(GL_TEXTURE2);
-            glUniform1i(glGetUniformLocation(program_game_.id(), "texture"), 2);
-            glUniform2f(glGetUniformLocation(program_game_.id(), "uPos"), x_, y_);
-            glDrawArrays(GL_QUADS, 0, 4);
-        
-            //render apple
-            glActiveTexture(GL_TEXTURE3);
-            glUniform1i(glGetUniformLocation(program_game_.id(), "texture"), 3);
-            glUniform2f(glGetUniformLocation(program_game_.id(), "uPos"), x_apple_, y_apple_);
-            glDrawArrays(GL_QUADS, 4, 4);
-
-            // move snake
-            x_ += velocity_x_;
-            y_ += velocity_y_;
-
-            check_collision();
-        }
-
     }
 
     //resets game parameters to default
@@ -526,6 +664,7 @@ private:
     unsigned int head_down_tex_id_;
     unsigned int head_right_tex_id_;
     unsigned int head_left_tex_id_;
+    unsigned int digits_[10];
 
 };
 
