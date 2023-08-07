@@ -98,21 +98,12 @@ public:
             GL_FLOAT, GL_FALSE, 4*sizeof(float), //size of each vertex
             (void*)(2*sizeof(float)));//where texture coordinate starts
 
-        //load snake facing up image
+        //stores snake head image
         constexpr unsigned int imDims = 32;
         image_snake_head_ = new unsigned char[imDims*imDims*4];
-        load_image("./images/snake_head.bmp", image_snake_head_, imDims, imDims);
-        if(!image_snake_head_)
-        {
-            std::cout << "Could not load snake head image. " << std::endl;
-            exit(0);
-        }
-        //add image to a texture object
-        Texture texture_snake_head_up(image_snake_head_, 2, imDims, imDims);
-        head_up_tex_id_ = texture_snake_head_up.id();
 
         //load snake facing down image
-        load_image("./images/snake_head.bmp", image_snake_head_, imDims, imDims);
+        load_image("./images/snake_down.bmp", image_snake_head_, imDims, imDims);
         if(!image_snake_head_)
         {
             std::cout << "Could not load snake head image. " << std::endl;
@@ -123,7 +114,7 @@ public:
         head_down_tex_id_ = texture_snake_head_down.id();
 
         //load snake facing right image
-        load_image("./images/snake_head.bmp", image_snake_head_, imDims, imDims);
+        load_image("./images/snake_right.bmp", image_snake_head_, imDims, imDims);
         if(!image_snake_head_)
         {
             std::cout << "Could not load snake head image. " << std::endl;
@@ -134,7 +125,7 @@ public:
         head_right_tex_id_ = texture_snake_head_right.id();
 
         //load snake facing right image
-        load_image("./images/snake_head.bmp", image_snake_head_, imDims, imDims);
+        load_image("./images/snake_left.bmp", image_snake_head_, imDims, imDims);
         if(!image_snake_head_)
         {
             std::cout << "Could not load snake head image. " << std::endl;
@@ -143,6 +134,17 @@ public:
         //add image to a texture object
         Texture texture_snake_head_left(image_snake_head_, 2, imDims, imDims);
         head_left_tex_id_ = texture_snake_head_left.id();
+
+        //load snake facing up image
+        load_image("./images/snake_head.bmp", image_snake_head_, imDims, imDims);
+        if(!image_snake_head_)
+        {
+            std::cout << "Could not load snake head image. " << std::endl;
+            exit(0);
+        }
+        //add image to a texture object
+        Texture texture_snake_head_up(image_snake_head_, 2, imDims, imDims);
+        head_up_tex_id_ = texture_snake_head_up.id();
 
 
         //load apple image
