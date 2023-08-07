@@ -278,7 +278,7 @@ GLFWwindow* init()
     glfwSetKeyCallback(window, keyCallback);
 
     //Don't allow user to resize window
-    // glfwSetWindowAttrib(window, GLFW_RESIZABLE, false); 
+    // glfwSetWindowAttrib(window, GLFW_RESIZABLE, false);
     
     //initialize glew
     if(glewInit() != GLEW_OK)

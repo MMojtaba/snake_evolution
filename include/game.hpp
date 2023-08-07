@@ -14,7 +14,7 @@ class Game
 public:
     Game(unsigned int win_width, unsigned int win_height): 
         play_button_selected_(true),
-        in_menu_(true), //TODO change back to true
+        in_menu_(false), //TODO change back to true
         window_width_(win_width),
         window_height_(win_height),
         score_area_height_(100),
@@ -28,11 +28,19 @@ public:
             "attribute vec2 aTexCoord;\n"
             "varying vec2 TexCoord;\n"
             "uniform vec2 uPos;\n"
+            "uniform float uRotate;\n"
             "void main() {\n"
-                //"gl_Position = vec4(aPos, 1.0, 1.0);\n"
-                "float x_new = (aPos.x+uPos.x - 400.0f)/400.0f;\n" //convert from pixel to -1 to 1 range
+                
+                "float x_new = (aPos.x+uPos.x - 400.0f)/400.0f;\n" 
                 "float y_new = (aPos.y+uPos.y - 300.0f)/300.0f;\n"
-                "gl_Position=vec4(x_new, y_new, 1.0, 1.0);\n"
+                "vec2 pos_new = vec2(x_new, y_new);\n"
+                
+                //move to origin, rotate around origin, move back
+                
+                // "mat2 rotate_matrix = mat2(cos(uRotate), -sin(uRotate),"
+                //     "sin(uRotate), cos(uRotate) );\n"
+                // "pos_new = rotate_matrix*pos_new;\n"
+                "gl_Position=gl_ModelViewProjectionMatrix*vec4(pos_new, 1.0, 1.0);\n"
                 "TexCoord = vec2(aTexCoord.x, aTexCoord.y);\n"
             "}"
         ),
@@ -232,11 +240,36 @@ public:
         glActiveTexture(GL_TEXTURE2);
         glUniform1i(glGetUniformLocation(program_.id(), "texture"), 2);
         glUniform2f(glGetUniformLocation(program_.id(), "uPos"), x_, y_);
+        glUniform1f(glGetUniformLocation(program_.id(), "uRotate"), 90.0);
+        
+
+
+        // glMatrixMode(GL_TEXTURE);
+        // glPushMatrix();
+        // glRotatef(90, 0.0f, 0.0f, 1.0f);
+
+
+        glMatrixMode(GL_MODELVIEW);
+        glLoadIdentity();
+        glPushMatrix(); // put current matrix on stack
+        float translate_x = (x_-400.0f)/400.0f;
+        float translate_y = (y_-300.0f)/300.0f;
+
+        glTranslatef(translate_x, translate_y, 0.0);
+        glRotatef(90, 0.0f, 0.0f, 1.0f);
+        glTranslatef(-translate_x, -translate_y, 0.0);
 
         glDrawArrays(GL_QUADS, 0, 4);
+        glRotatef(-90, 0.0f, 0.0f, 1.0f);
+
+    //      glMatrixMode(GL_TEXTURE);
+    // glPopMatrix();
+
+    // glMatrixMode(GL_MODELVIEW);
+    glPopMatrix();
+
         // glDisableVertexAttribArray(2); 
         // glDisableVertexAttribArray(3); 
-
 
         //render apple
         // glEnableVertexAttribArray(4);
@@ -244,6 +277,8 @@ public:
         glActiveTexture(GL_TEXTURE3);
         glUniform1i(glGetUniformLocation(program_.id(), "texture"), 3);
         glUniform2f(glGetUniformLocation(program_.id(), "uPos"), x_apple_, y_apple_);
+        glUniform1f(glGetUniformLocation(program_.id(), "uRotate"), 0);
+
         glDrawArrays(GL_QUADS, 4, 4);
         glDisableVertexAttribArray(2); 
         glDisableVertexAttribArray(3); 
