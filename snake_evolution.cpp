@@ -130,22 +130,25 @@ unsigned int program_render_mm()
 
 
     //create buffer to store vertices for main menu
-    unsigned int vertex_buffer_mm;
-    glGenBuffers(1, &vertex_buffer_mm);
-    glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer_mm); //set buffer as current one
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices_mm), vertices_mm, GL_STATIC_DRAW); //add data to buffer
+    // unsigned int vertex_buffer_mm;
+    // glGenBuffers(1, &vertex_buffer_mm);
+    // glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer_mm); //set buffer as current one
+    // glBufferData(GL_ARRAY_BUFFER, sizeof(vertices_mm), vertices_mm, GL_STATIC_DRAW); //add data to buffer
 
-    //position of vertices attribute (vertex data layout)
-    glEnableVertexAttribArray(0); 
-    glVertexAttribPointer(0, 2, //number of positions
-        GL_FLOAT, GL_FALSE, 4*sizeof(float), //size of each vertex
-        0); //where positions start
+    // //position of vertices attribute (vertex data layout)
+    // glEnableVertexAttribArray(0); 
+    // glVertexAttribPointer(0, 2, //number of positions
+    //     GL_FLOAT, GL_FALSE, 4*sizeof(float), //size of each vertex
+    //     0); //where positions start
 
-    //texture coordinate attributes
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 2, //number of coordinates for a texture coordinate
-        GL_FLOAT, GL_FALSE, 4*sizeof(float), //size of each vertex
-        (void*)(2*sizeof(float)));//where texture coordinate starts
+    // //texture coordinate attributes
+    // glEnableVertexAttribArray(1);
+    // glVertexAttribPointer(1, 2, //number of coordinates for a texture coordinate
+    //     GL_FLOAT, GL_FALSE, 4*sizeof(float), //size of each vertex
+    //     (void*)(2*sizeof(float)));//where texture coordinate starts
+
+    program.make_vertex_buffer(vertices_mm, sizeof(vertices_mm), 0, 1);
+
 
 
     //load play and quit images

@@ -48,6 +48,32 @@ public:
         check_program_error();
     }
 
+
+    //
+    void make_vertex_buffer(float* vertices, unsigned int size, 
+        unsigned int pos_attrib_array_id, unsigned int tex_attrib_array_id)
+    {
+        glGenBuffers(1, &vertex_buffer_id_);
+        glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer_id_); //ste buffer as current one
+        glBufferData(GL_ARRAY_BUFFER, size, vertices, GL_STATIC_DRAW); //add data to buffer
+        
+        //position of vertices attribute
+        glEnableVertexAttribArray(pos_attrib_array_id); 
+        glVertexAttribPointer(pos_attrib_array_id, 2, //number of position coordinates
+        GL_FLOAT, GL_FALSE, 4*sizeof(float), //size of each vertex
+        0); //where positions start
+
+        //texture coordinate attributes
+        glEnableVertexAttribArray(tex_attrib_array_id);
+        glVertexAttribPointer(tex_attrib_array_id, 2, //number of coordinates for a texture coordinate
+            GL_FLOAT, GL_FALSE, 4*sizeof(float), //size of each vertex
+            (void*)(2*sizeof(float)));//where texture coordinate starts
+    }
+
+
+
+
+
     //checks if shader had a compilation error
     void check_compile_error(unsigned int shader)
     {
@@ -89,6 +115,12 @@ public:
         return id_;
     }
 
+    //gets id of vertex buffer that's storing program's data
+    unsigned int vb_id()
+    {
+        return vertex_buffer_id_;
+    }
+
     //use program
     void use()
     {
@@ -96,10 +128,13 @@ public:
     }
 
 
+
+
 private:
     unsigned int id_;
     unsigned int vertex_shader_;
     unsigned int frag_shader_;
+    unsigned int vertex_buffer_id_;
 };
 
 

@@ -81,22 +81,23 @@ public:
         };
 
         //create buffer to store the vertices data
-        unsigned int vertex_buffer;
-        glGenBuffers(1, &vertex_buffer);
-        glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer); //set buffer as current one
-        glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW); //add data to buffer
+        // unsigned int vertex_buffer;
+        // glGenBuffers(1, &vertex_buffer);
+        // glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer); //set buffer as current one
+        // glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW); //add data to buffer
 
         //position of vertices attribute
-        glEnableVertexAttribArray(2); 
-        glVertexAttribPointer(2, 2, //number of position coordinates
-        GL_FLOAT, GL_FALSE, 4*sizeof(float), //size of each vertex
-        0); //where positions start
+        // glEnableVertexAttribArray(2); 
+        // glVertexAttribPointer(2, 2, //number of position coordinates
+        // GL_FLOAT, GL_FALSE, 4*sizeof(float), //size of each vertex
+        // 0); //where positions start
 
-        //texture coordinate attributes
-        glEnableVertexAttribArray(3);
-        glVertexAttribPointer(3, 2, //number of coordinates for a texture coordinate
-            GL_FLOAT, GL_FALSE, 4*sizeof(float), //size of each vertex
-            (void*)(2*sizeof(float)));//where texture coordinate starts
+        // //texture coordinate attributes
+        // glEnableVertexAttribArray(3);
+        // glVertexAttribPointer(3, 2, //number of coordinates for a texture coordinate
+        //     GL_FLOAT, GL_FALSE, 4*sizeof(float), //size of each vertex
+        //     (void*)(2*sizeof(float)));//where texture coordinate starts
+        program_.make_vertex_buffer(vertices, sizeof(vertices), 2, 3);
 
         //stores snake head image
         constexpr unsigned int imDims = 32;
