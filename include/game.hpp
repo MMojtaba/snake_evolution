@@ -6,7 +6,8 @@
 #include <deque>
 #include <string>
 #include <stdlib.h>
-#include <time.h>
+#include <ctime>
+#include <chrono>
 #include "program.hpp"
 #include "utils.hpp"
 #include "texture.hpp"
@@ -113,7 +114,8 @@ private:
     bool play_button_selected_; //whether the play button is selected in the mneu
     bool in_menu_; //whether the use is in the menu
     int score_; //user's score
-    clock_t timer_; //used as a timer to update snake's body location
+    // clock_t timer_; //used as a timer to update snake's body location
+    std::chrono::high_resolution_clock::time_point timer_;
 
     const float velocity_; //how fast the snake moves
     float velocity_x_; //velocity of snake in x direction

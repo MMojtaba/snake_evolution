@@ -239,7 +239,12 @@ void Game::render_game()
         render_score(render_array_offset);
 
         //propegate the prev position of the snake through the body after a period of time
-        if(float(clock() - timer_)/CLOCKS_PER_SEC > 0.005f)
+        // if(float(clock() - timer_)/CLOCKS_PER_SEC > 0.005f)
+        std::chrono::duration<float, std::milli> time_diff = std::chrono::high_resolution_clock::now() - timer_;
+        // time_t time_new = time(0);
+        // std::cout << time_new << std::endl;
+        // if((difftime(time_new, timer_)) > 1.0)
+        if(time_diff.count() > 110.0f)
         {
             
             //increase queue's length if snake should be larger
@@ -283,7 +288,7 @@ void Game::render_game()
             y_prev_ = y_;
             
             //reset timer
-            timer_ = clock();
+            timer_ = std::chrono::high_resolution_clock::now();
         }
 
 
@@ -294,14 +299,14 @@ void Game::render_game()
             glDrawArrays(GL_QUADS, 0, 4);
         }
         
-
+        //check for collision
+        process_collision(); //TODO move up?
 
         // move snake
         x_ += velocity_x_;
         y_ += velocity_y_;
 
-        //check for collision
-        process_collision(); //TODO move up?
+        
     }
 
 }
@@ -348,7 +353,7 @@ void Game::reset_game()
     snake_body_locX_.clear();
     snake_body_locY_.clear();
 
-    timer_ = clock();
+    timer_ = std::chrono::high_resolution_clock::now();
     x_prev_ = x_;
     y_prev_ = y_;
     // popped_ = false; TODO remove
@@ -434,15 +439,23 @@ void Game::process_collision()
     }
 
     //check collision with snake's body
-    for(int i = 0; i < snake_body_locX_.size() ; ++i)
+    for(int i = 2; i < snake_body_locX_.size() ; ++i)
     {
-        float body_x = snake_body_locX_[i];
-        float body_y = snake_body_locY_[i];
+        const float body_x = snake_body_locX_[i];
+        const float body_y = snake_body_locY_[i];
         
-        if(x_+10.0f >= body_x && x_+entity_width_-10.0f <= body_x+entity_width_
-            && y_+10.0f >= body_y && y_+entity_width_-10.0f <= body_y+entity_width_)
+        //x collisions for head left and right side
+        const bool x_left_corners = x_ >= body_x && x_ <= body_x+entity_width_;
+        const bool x_right_corners = x_+entity_width_ >= body_x && x_ <= body_x+entity_width_;
+        //y collisions for head's top and bottom side
+        const bool y_bottom_corners = y_ >= body_y && y_ <= body_y+entity_width_;
+        const bool y_top_corners = y_+entity_width_ >= body_y && y_+entity_width_ <= body_y+entity_width_;
+        //if any combination of x and y conditions are true, then there is a collision
+        if(x_left_corners && y_bottom_corners 
+            || x_left_corners && y_top_corners
+            || x_right_corners && y_bottom_corners
+            || x_right_corners && y_top_corners)
         {
-            // std::cout << "collision " << std::endl;
             process_game_over();
             return;
         }
