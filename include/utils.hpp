@@ -14,7 +14,7 @@
         width (int): Width of the image
         height (int): Height of the image
 */
-void load_image(const std::string name, unsigned char* dest, int width, int height, bool readFile = false)
+void load_image(const std::string name, unsigned char* dest, const int width, const int height, const bool readFile = false)
 {
     std::ifstream image(name, std::ios::in | std::ios_base::binary);
 
@@ -93,6 +93,11 @@ static void glfwErrorCallback(int id, const char* err)
 }
 
 
-
+//clears window's content
+void clear_window()
+{
+    glClearColor(0.0f, 0.1f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
+}
 
 #endif

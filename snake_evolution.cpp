@@ -8,7 +8,6 @@
 //Function declarations. see their definition at the bottom for description of function.
 void keyCallback(GLFWwindow*, int, int, int, int);
 GLFWwindow* init();
-void clear_window();
 
 //initialize things such as glfw and glew and create a window
 GLFWwindow* window = init();
@@ -52,23 +51,12 @@ int main()
 
 
 
-
-
-
-
 //End of main ---------------------------------------------------------------------------------
 
 //Handle user inputs
 void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
     game.process_input(window, key, action);
-}
-
-//clears window's content
-void clear_window()
-{
-    glClearColor(0.0f, 0.1f, 0.0f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT);
 }
 
 //initializes the required components (glfw, glew)
