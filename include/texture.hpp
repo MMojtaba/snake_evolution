@@ -7,7 +7,16 @@
 class Texture
 {
 public:
-    Texture(unsigned char* image, unsigned int slot, unsigned int width, unsigned int height):
+
+    /*
+    Intializes the texture object.
+    Parameters:
+        image (unsigned char*): Pointer to place in memory that contains image data that will be used for this texture.
+        slot (unsigned int): The texture slot to beind this texture object to.
+        width (unsigned int): The width of the image.
+        height (unsigned int): The height of the image.
+    */
+    Texture(const unsigned char* image, unsigned int slot, unsigned int width, unsigned int height):
         slot_(slot),
         width_(width),
         height_(height)
@@ -23,8 +32,11 @@ public:
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width_, height_, 0, GL_RGBA, GL_UNSIGNED_BYTE, image);
     }
 
-
-
+    /*
+    Get id associated with this texture.
+    Returns:
+        id (unsigned int): Texture's id.
+    */
     unsigned int id()
     {
         return id_;
@@ -32,6 +44,9 @@ public:
 
 
 private:
+    /*
+    Set parameters required to render a texture.
+    */
     void set_texture_params()
     {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);

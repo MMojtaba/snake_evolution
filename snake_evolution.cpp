@@ -1,40 +1,25 @@
 #include <iostream>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
-#include <string>
-#include <fstream>
-#include <cassert>
-// #include <stdint.h>
-#include "shader_code.hpp"
-#include "program.hpp"
 #include "game.hpp"
 #include "utils.hpp"
-#include "texture.hpp"
-
 
 
 //Function declarations. see their definition at the bottom for description of function.
-static void glfwErrorCallback(int, const char*);
 void keyCallback(GLFWwindow*, int, int, int, int);
 GLFWwindow* init();
-void draw_mm_buttons(unsigned int);
 void clear_window();
-unsigned int program_render_mm();
-
 
 //initialize things such as glfw and glew and create a window
 GLFWwindow* window = init();
-
 
 //Global variables
 constexpr int window_width = 800;
 constexpr int window_height = 600;
 Game game(window_width,window_height);
 
-
 int main()
 {
-    
     //check for errors
     ce();
 
@@ -77,6 +62,13 @@ int main()
 void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
     game.process_input(window, key, action);
+}
+
+//clears window's content
+void clear_window()
+{
+    glClearColor(0.0f, 0.1f, 0.0f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT);
 }
 
 //initializes the required components (glfw, glew)
@@ -125,10 +117,5 @@ GLFWwindow* init()
 }
 
 
-//clears window's content
-void clear_window()
-{
-    glClearColor(0.0f, 0.1f, 0.0f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT);
-}
+
 

@@ -3,15 +3,18 @@
 
 #include <fstream>
 #include <string>
+#include <cassert>
 #include "image_data.hpp"
-// #include <stdint.h>
-// #include <string.h>
-// #include <algorithm>
 
 
-
-//load stored images
-void load_image(std::string name, unsigned char* dest, int width, int height, bool readFile = false)
+/*  load stored images if readFile is false, otherwise read from bmp file
+    Parameters:
+        name (string): name of the image file to get
+        dest (string): destination to put the image's pixel data
+        width (int): Width of the image
+        height (int): Height of the image
+*/
+void load_image(const std::string name, unsigned char* dest, int width, int height, bool readFile = false)
 {
     std::ifstream image(name, std::ios::in | std::ios_base::binary);
 
@@ -68,11 +71,10 @@ void print_gl_version()
     std::cout << "Texture Units: " << num  << std::endl;
     glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &num);
     std::cout << "Max vertex attrib: " << num  << std::endl;
-
 }
 
 
-//if an error has occured, prints the error code and terminates program
+//if an opengl error has occured when this function is called, prints the error code and terminates program
 void ce()
 {
     GLenum err;
@@ -84,7 +86,7 @@ void ce()
 }
 
 
-//handle glfw errors 
+//prints glfw errors
 static void glfwErrorCallback(int id, const char* err)
 {
   std::cerr << err <<"\n";

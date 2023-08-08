@@ -4,7 +4,12 @@
 #include <string>
 
 
-//stores data of images needed for texturing and returns the requested one
+/*stores data of images needed for texturing and returns the requested one
+    Parameters:
+        name (string): Name of the image to get.
+    Returns:
+        image (string): Pointer to place that contains the image's data (RGBA).
+*/
 unsigned char* get_image(std::string name)
 {
     static unsigned char image_play[] = {

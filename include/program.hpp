@@ -4,30 +4,33 @@
 #include <GL/glew.h>
 // #include <GLFW/glfw3.h>
 #include <iostream>
-#include <vector>
+// #include <vector>
 
 class Program
 {
 public:
-    Program()
-    {
-        id_ = glCreateProgram();
-    }
+    //Create program
+    Program():
+    id_(glCreateProgram()),
+    vertex_shader_(glCreateShader(GL_VERTEX_SHADER)),
+    frag_shader_(glCreateShader(GL_FRAGMENT_SHADER))
+    {}
 
     ~Program()
     {
         //delete shaders
         glDeleteShader(vertex_shader_);
         glDeleteShader(frag_shader_);
-
     }
 
-    //adds vertex and fragment shaders
+    /*
+    Create and compile vertex and fragment shaders.
+    Parameters:
+        vs_code (const char*): Vertex shader code.
+        fs_code (const char*): Fragment shader code. 
+    */
     void create_shaders(const char* vs_code, const char* fs_code)
     {
-        //create shader object
-        vertex_shader_ = glCreateShader(GL_VERTEX_SHADER);
-        frag_shader_ = glCreateShader(GL_FRAGMENT_SHADER);
 
         //specify shader code
         glShaderSource(vertex_shader_, 1, &vs_code, NULL);
@@ -54,10 +57,18 @@ public:
     }
 
 
-    //Creates a buffer, stores vertex data in it, and specifies how position and texture coordinates are mapped
-    void make_vertex_buffer(float* vertices, unsigned int size, 
-        unsigned int posAttr_id, unsigned int texAttr_id)
+    /*
+    Creates a buffer, stores vertex data in it, and specifies how position and texture coordinates are mapped.
+    Parameters:
+        vertices (const float*): Float values that contain vertex data.
+        size (const unsigned int): Size in bytes of vertices.
+        posAttr_id (const unsigned int): Id of the vertexAttribPointer to use for position data of vertices.
+        texAttr_id (const unsigned int): Id of the vertexAttribPointer to use for texture coordinate data of vertices.
+    */
+    void make_vertex_buffer(const float* vertices, const unsigned int size, 
+        unsigned int const posAttr_id, unsigned int const texAttr_id)
     {
+        //generate buffer
         unsigned int vb_id;
         glGenBuffers(1, &vb_id);
         glBindBuffer(GL_ARRAY_BUFFER, vb_id); //set buffer as current one
@@ -81,7 +92,7 @@ public:
         tex_attrib_array_id_ = texAttr_id;
     }
 
-    //enables vertex array associated with given index
+    //enable vertexAttribArrays associated with this program
     void enable_vertex_array()
     {
         glEnableVertexAttribArray(pos_attrib_array_id_);
@@ -89,16 +100,37 @@ public:
 
     }
 
-    void disable_vertex_array(unsigned int index, std::string type="")
+    //disable vertexAttribArrays associated with this program
+    void disable_vertex_array(unsigned int index)
     {
         glDisableVertexAttribArray(pos_attrib_array_id_);
         glDisableVertexAttribArray(tex_attrib_array_id_);
     }
 
+    
+
+    //gets id of this program
+    unsigned int id()
+    {
+        return id_;
+    }
 
 
-    //checks if shader had a compilation error
-    void check_compile_error(unsigned int shader)
+    //activates this program and its associated vertex array
+    void use()
+    {
+        enable_vertex_array();
+        glUseProgram(id_);
+    }
+
+
+private:
+    /*
+    Checks if given shader had a compilation error, if so, prints error and terminates program
+    Parameters:
+        shader (const unsigned int): Id of the shader.
+    */
+    void check_compile_error(const unsigned int shader)
     {
         int compile_ok;
         glGetShaderiv(shader, GL_COMPILE_STATUS, &compile_ok);
@@ -118,7 +150,7 @@ public:
         }
     }
 
-    //checks if linked program has an error
+    //checks if linked program has an error, if so, prints it and terminates the program
     void check_program_error()
     {
         int program_ok;
@@ -132,31 +164,11 @@ public:
         }
     }
 
-    //gets id of the program
-    unsigned int id()
-    {
-        return id_;
-    }
-
-
-
-    //use program
-    void use()
-    {
-        enable_vertex_array();
-        glUseProgram(id_);
-
-    }
-
-
-
-
-private:
-    unsigned int id_;
-    unsigned int vertex_shader_;
-    unsigned int frag_shader_;
-    unsigned int pos_attrib_array_id_;
-    unsigned int tex_attrib_array_id_;
+    const unsigned int id_; //id of program
+    const unsigned int vertex_shader_; //id of the vertex shader
+    const unsigned int frag_shader_; //id of the fragment shader
+    unsigned int pos_attrib_array_id_; //Id of the vertexAttribPointer used for positions
+    unsigned int tex_attrib_array_id_;//Id of the vertexAttribPointer used for texture coordinates
 };
 
 
