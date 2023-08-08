@@ -2,7 +2,8 @@
 #define GAME_H
 
 #include <GL/glew.h>
-#include <vector>
+// #include <vector>
+#include <deque>
 #include <string>
 #include <stdlib.h>
 #include <time.h>
@@ -182,45 +183,29 @@ public:
 
         //load snake facing down image
         load_image("snake_down", image_snake_head_, imDims, imDims);
-
-        if(!image_snake_head_)
-        {
-            std::cout << "Could not load snake head image. " << std::endl;
-            exit(0);
-        }
         //add image to a texture object
         Texture texture_snake_head_down(image_snake_head_, 2, imDims, imDims);
         head_down_tex_id_ = texture_snake_head_down.id();
 
         //load snake facing right image
         load_image("snake_right", image_snake_head_, imDims, imDims);
-        if(!image_snake_head_)
-        {
-            std::cout << "Could not load snake head image. " << std::endl;
-            exit(0);
-        }
         //add image to a texture object
         Texture texture_snake_head_right(image_snake_head_, 2, imDims, imDims);
         head_right_tex_id_ = texture_snake_head_right.id();
 
         //load snake facing right image
         load_image("snake_left", image_snake_head_, imDims, imDims);
-        if(!image_snake_head_)
-        {
-            std::cout << "Could not load snake head image. " << std::endl;
-            exit(0);
-        }
         //add image to a texture object
         Texture texture_snake_head_left(image_snake_head_, 2, imDims, imDims);
         head_left_tex_id_ = texture_snake_head_left.id();
 
+        //load snake facing right image
+        load_image("snake_body", image_snake_head_, imDims, imDims);
+        //add image to a texture object
+        Texture texture_snake_body(image_snake_head_, 7, imDims, imDims);
+
         //load snake facing up image
         load_image("snake_head", image_snake_head_, imDims, imDims);
-        if(!image_snake_head_)
-        {
-            std::cout << "Could not load snake head image. " << std::endl;
-            exit(0);
-        }
         //add image to a texture object
         Texture texture_snake_head_up(image_snake_head_, 2, imDims, imDims);
         head_up_tex_id_ = texture_snake_head_up.id();
@@ -229,11 +214,6 @@ public:
         //load apple image
         image_apple_ = new unsigned char[imDims*imDims*4];
         load_image("apple", image_apple_, imDims, imDims);
-        if(!image_apple_)
-        {
-            std::cout << "Could not load apple image. " << std::endl;
-            exit(0);
-        }
         //create apple texture
         Texture texture_apple(image_apple_, 3, imDims, imDims);
 
@@ -243,29 +223,14 @@ public:
         unsigned int imHeight = 32;
         unsigned char* image = new unsigned char[imWidth*imHeight*4];
         load_image("play", image, imWidth, imHeight);
-        if(!image)
-        {
-            std::cout << "could not load play image" << std::endl;
-            exit(0);
-        }
         Texture texture_play(image, 0, imWidth, imHeight);
 
         //load quit button texture
         load_image("quit", image, imWidth, imHeight);
-        if(!image)
-        {
-            std::cout << "could not load quit image" << std::endl;
-            exit(0);
-        }
         Texture texture_quit(image, 1, imWidth, imHeight);
         
         //load score texture
         load_image("score", image, imWidth, imHeight);
-        if(!image)
-        {
-            std::cout << "could not load score image" << std::endl;
-            exit(0);
-        }
         Texture texture_score(image, 4, imWidth, imHeight);
 
         //load digits (0 to 9) textures
@@ -314,7 +279,7 @@ public:
 
 
 
-        ce();
+        ce(); //TODO remove
 
         //use program
         program_menu_.use();
@@ -389,6 +354,89 @@ public:
 
             //render score
             render_score(8);
+
+            //render snake body
+            //update snake's body positions if enough time has passed
+            // std::cout << float(clock() - timer_)/CLOCKS_PER_SEC << std::endl;
+            if(float(clock() - timer_)/CLOCKS_PER_SEC > 0.005f)
+            {
+                //propegate the prev position of the snake through the body
+                // for(int i = snake_body_loc_.size()-1 ; i >= 0; --i)
+                while(length_ > snake_body_locX_.size())
+                {
+                    snake_body_locX_.push_back(0.0f);
+                    snake_body_locY_.push_back(0.0f);
+
+                }
+                if(snake_body_locX_.size() > 0)
+                {
+                    // std::cout << "popped " << std::endl;
+                    snake_body_locX_.pop_back();
+                    snake_body_locY_.pop_back();
+                    
+                    popped_ = true;
+                }
+
+                for(int i = 0; i < snake_body_locX_.size() ; ++i)
+                {
+                    // float x_tail = snake_body_loc_.back()[0];
+                    // float y_tail = snake_body_loc_.back()[1];
+                    // std::vector<float> tmp_tail(snake_body_loc_.back()[0],snake_body_loc_.back()[1]);
+                    snake_body_locX_.push_front(snake_body_locX_.back());
+                    snake_body_locY_.push_front(snake_body_locY_.back());
+
+                    // snake_body_loc_.push_front(std::vector<float>(snake_body_loc_.back()[0],snake_body_loc_.back()[1]));
+                    // snake_body_loc_.pop_back();
+                    snake_body_locX_.pop_back();
+                    snake_body_locY_.pop_back();
+
+                }
+
+                if(popped_)
+                {
+                    // std::cout << "pushed " << std::endl;
+                    // std::vector<float> tmp(x_prev_, y_prev_);
+
+                    // snake_body_loc_.push_front(std::vector<float>(x_prev_, y_prev_));
+                    snake_body_locX_.push_front(x_prev_);
+                    snake_body_locY_.push_front(y_prev_);
+                    popped_ = false;
+                }
+
+                // assert(length_ == snake_body_loc_.size());
+                // std::cout << "length: " << length_ << ", " << snake_body_loc_.size() << std::endl;
+
+                //
+                x_prev_ = x_;
+                y_prev_ = y_;
+                // std::cout << x_prev_ << ", " << y_prev_ << std::endl;
+                // std::cout << "has passed " << timer_ <<  std::endl;
+
+                // if(length_ > snake_body_loc_.size())
+                // if(length_ < snake_body_loc_.size()) //need to keep size of queue at this amount
+                // {
+                //     snake_body_loc_.pop_front();
+                // }
+
+                timer_ = clock();
+            }
+            // for(int i = 0; i < length_; ++i)
+            // {
+            //     if(snake_body_loc_.size() < i)
+            //     {
+            //         snake_body_loc_.push_back({x_,y_});
+            //     }
+            // }
+            for(int i = 0; i < snake_body_locX_.size(); ++i)
+            {
+                // std::cout << "Rendering snake body " << i << std::endl;
+                // std::vector<float> tmp = snake_body_loc_[i];
+                std::cout << "\nvalue: " << snake_body_locX_[i] << ", " << snake_body_locY_[i] << std::endl;
+                
+                activate_texture_game(7, snake_body_locX_[i], snake_body_locY_[i]);
+                glDrawArrays(GL_QUADS, 0, 4);
+            }
+            
 
 
             // move snake
@@ -534,7 +582,7 @@ public:
     //resets game parameters to default
     void reset()
     {
-        length_ = 1;
+        length_ = 0;
         score_ = 0;
         snake_dir_ = UP;
         velocity_x_ = 0.0f;
@@ -544,6 +592,14 @@ public:
         x_apple_ = 500.0f;
         y_apple_ = 400.0f;
         rotate_head(head_up_tex_id_);//reset snake texture
+        snake_body_locX_.clear();
+        snake_body_locY_.clear();
+
+        timer_ = clock();
+        x_prev_ = x_;
+        y_prev_ = y_;
+        popped_ = false;
+
     }
 
     //handle user input
@@ -624,6 +680,13 @@ private:
         {
             //increase score
             ++score_;
+            ++length_;
+            // if(length_ > snake_body_loc_.size())
+            // {
+            //     std::vector<float> tmp(0.0f, 0.0f);
+            //     snake_body_loc_.push_back(tmp);
+
+            // }
             //change apple's location
             random_location(x_apple_, y_apple_);
             // std::cout << "Touched apple, score is: " << score_ << std::endl;
@@ -679,7 +742,13 @@ private:
     unsigned int head_right_tex_id_;
     unsigned int head_left_tex_id_;
     unsigned int digits_[10];
-
+    std::deque<float> snake_body_locX_; //contains the location of the snake body
+    std::deque<float> snake_body_locY_; //contains the location of the snake body
+    
+    clock_t timer_;
+    float x_prev_; 
+    float y_prev_;
+    bool popped_;
 };
 
 
