@@ -355,84 +355,58 @@ public:
             //render score
             render_score(8);
 
-            //render snake body
-            //update snake's body positions if enough time has passed
-            // std::cout << float(clock() - timer_)/CLOCKS_PER_SEC << std::endl;
+            //propegate the prev position of the snake through the body after a period of time
             if(float(clock() - timer_)/CLOCKS_PER_SEC > 0.005f)
             {
-                //propegate the prev position of the snake through the body
-                // for(int i = snake_body_loc_.size()-1 ; i >= 0; --i)
+                
+                //increase queue's length if snake should be larger
                 while(length_ > snake_body_locX_.size())
                 {
-                    snake_body_locX_.push_back(0.0f);
-                    snake_body_locY_.push_back(0.0f);
+                    snake_body_locX_.push_back(-100.0f);
+                    snake_body_locY_.push_back(-100.0f);
 
                 }
+
+                //discard the position at the end of the queue
                 if(snake_body_locX_.size() > 0)
                 {
-                    // std::cout << "popped " << std::endl;
                     snake_body_locX_.pop_back();
                     snake_body_locY_.pop_back();
-                    
-                    popped_ = true;
+                    // popped_ = true;
                 }
 
+                //propegate values towards the tail of the snake
                 for(int i = 0; i < snake_body_locX_.size() ; ++i)
                 {
-                    // float x_tail = snake_body_loc_.back()[0];
-                    // float y_tail = snake_body_loc_.back()[1];
-                    // std::vector<float> tmp_tail(snake_body_loc_.back()[0],snake_body_loc_.back()[1]);
                     snake_body_locX_.push_front(snake_body_locX_.back());
                     snake_body_locY_.push_front(snake_body_locY_.back());
 
-                    // snake_body_loc_.push_front(std::vector<float>(snake_body_loc_.back()[0],snake_body_loc_.back()[1]));
-                    // snake_body_loc_.pop_back();
                     snake_body_locX_.pop_back();
                     snake_body_locY_.pop_back();
 
                 }
 
-                if(popped_)
+                //add the new position value to the queue
+                if(length_ > snake_body_locX_.size()) //popped_
                 {
-                    // std::cout << "pushed " << std::endl;
-                    // std::vector<float> tmp(x_prev_, y_prev_);
-
-                    // snake_body_loc_.push_front(std::vector<float>(x_prev_, y_prev_));
                     snake_body_locX_.push_front(x_prev_);
                     snake_body_locY_.push_front(y_prev_);
-                    popped_ = false;
+                    // popped_ = false;
                 }
 
-                // assert(length_ == snake_body_loc_.size());
-                // std::cout << "length: " << length_ << ", " << snake_body_loc_.size() << std::endl;
 
-                //
+                //set value of prev position to current one
                 x_prev_ = x_;
                 y_prev_ = y_;
-                // std::cout << x_prev_ << ", " << y_prev_ << std::endl;
-                // std::cout << "has passed " << timer_ <<  std::endl;
-
-                // if(length_ > snake_body_loc_.size())
-                // if(length_ < snake_body_loc_.size()) //need to keep size of queue at this amount
-                // {
-                //     snake_body_loc_.pop_front();
-                // }
-
+                
+                //reset timer
                 timer_ = clock();
             }
-            // for(int i = 0; i < length_; ++i)
-            // {
-            //     if(snake_body_loc_.size() < i)
-            //     {
-            //         snake_body_loc_.push_back({x_,y_});
-            //     }
-            // }
+
+
+            //render snake body
             for(int i = 0; i < snake_body_locX_.size(); ++i)
             {
-                // std::cout << "Rendering snake body " << i << std::endl;
-                // std::vector<float> tmp = snake_body_loc_[i];
-                std::cout << "\nvalue: " << snake_body_locX_[i] << ", " << snake_body_locY_[i] << std::endl;
-                
                 activate_texture_game(7, snake_body_locX_[i], snake_body_locY_[i]);
                 glDrawArrays(GL_QUADS, 0, 4);
             }
@@ -681,15 +655,23 @@ private:
             //increase score
             ++score_;
             ++length_;
-            // if(length_ > snake_body_loc_.size())
-            // {
-            //     std::vector<float> tmp(0.0f, 0.0f);
-            //     snake_body_loc_.push_back(tmp);
-
-            // }
             //change apple's location
             random_location(x_apple_, y_apple_);
-            // std::cout << "Touched apple, score is: " << score_ << std::endl;
+        }
+
+        //check collision with snake's body
+        for(int i = 0; i < snake_body_locX_.size() ; ++i)
+        {
+            float body_x = snake_body_locX_[i];
+            float body_y = snake_body_locY_[i];
+            
+            if(x_+10.0f >= body_x && x_+entity_width_-10.0f <= body_x+entity_width_
+                && y_+10.0f >= body_y && y_+entity_width_-10.0f <= body_y+entity_width_)
+            {
+                // std::cout << "collision " << std::endl;
+                process_game_over();
+                return;
+            }
         }
 
 
