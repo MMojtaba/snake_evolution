@@ -5,20 +5,28 @@ project(snake_evolution_game LANGUAGES CXX)
 find_package(GLEW REQUIRED)
 find_package(glfw3 REQUIRED)
 
+#set include directories to make includes easier
 include_directories(${CMAKE_SOURCE_DIR}/include)
 
 #add and link glfw and glew libraries
 include_directories(${GLFW_INCLUDE_DIRS} ${GLEW_INCLUDE_DIRS} )
 link_libraries(${GLEW_LIBRARIES} ${GLFW_LIBRARIES})
 
+#Add header files to a variable
+set(HEADERS
+        include/game.hpp 
+        include/image_data.hpp
+        include/program.hpp
+        include/texture.hpp
+        include/utils.hpp)
+#Add source files to a variable
+set(SOURCES
+        lib/game.cpp
+        lib/program.cpp
+        lib/texture.cpp)
+
 #create executable and link with libraries
-add_executable(run_snake_evolution snake_evolution.cpp 
-    include/shader_code.hpp 
-    include/program.hpp include/game.hpp 
-    include/utils.hpp
-    include/texture.hpp
-    include/image_data.hpp)
-    
+add_executable(run_snake_evolution snake_evolution.cpp ${HEADERS} ${SOURCES})
 target_link_libraries(run_snake_evolution glfw)
 target_link_libraries(run_snake_evolution GL)
 

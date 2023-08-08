@@ -14,7 +14,7 @@
         width (int): Width of the image
         height (int): Height of the image
 */
-void load_image(const std::string name, unsigned char* dest, const int width, const int height, const bool readFile = false)
+inline void load_image(const std::string name, unsigned char* dest, const int width, const int height, const bool readFile = false)
 {
     std::ifstream image(name, std::ios::in | std::ios_base::binary);
 
@@ -60,7 +60,7 @@ void load_image(const std::string name, unsigned char* dest, const int width, co
 
 
 //prints opengl version information
-void print_gl_version()
+inline void print_gl_version()
 {
     std::cout << "GL version: " << glGetString(GL_VERSION) << std::endl;
     std::cout << "GL vendor : " << glGetString(GL_VENDOR  ) << std::endl;
@@ -75,7 +75,7 @@ void print_gl_version()
 
 
 //if an opengl error has occured when this function is called, prints the error code and terminates program
-void ce()
+inline void ce()
 {
     GLenum err;
     while((err = glGetError()) != GL_NO_ERROR)
@@ -94,7 +94,7 @@ static void glfwErrorCallback(int id, const char* err)
 
 
 //clears window's content
-void clear_window()
+inline void clear_window()
 {
     glClearColor(0.0f, 0.1f, 0.0f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT);

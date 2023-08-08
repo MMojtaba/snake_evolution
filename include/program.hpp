@@ -10,18 +10,9 @@ class Program
 {
 public:
     //Create program
-    Program():
-    id_(glCreateProgram()),
-    vertex_shader_(glCreateShader(GL_VERTEX_SHADER)),
-    frag_shader_(glCreateShader(GL_FRAGMENT_SHADER))
-    {}
+    Program();
 
-    ~Program()
-    {
-        //delete shaders
-        glDeleteShader(vertex_shader_);
-        glDeleteShader(frag_shader_);
-    }
+    ~Program();
 
     /*
     Create and compile vertex and fragment shaders.
@@ -29,33 +20,10 @@ public:
         vs_code (const char*): Vertex shader code.
         fs_code (const char*): Fragment shader code. 
     */
-    void create_shaders(const char* vs_code, const char* fs_code)
-    {
-
-        //specify shader code
-        glShaderSource(vertex_shader_, 1, &vs_code, NULL);
-        glShaderSource(frag_shader_, 1, &fs_code, NULL);
-
-        //compile and check for errors
-        glCompileShader(vertex_shader_);
-        check_compile_error(vertex_shader_);
-        glCompileShader(frag_shader_);
-        check_compile_error(frag_shader_);
-
-    }
+    void create_shaders(const char* vs_code, const char* fs_code);
 
     //attaches shaders to the program and links the program
-    void attach_shaders()
-    {
-        glAttachShader(id_, vertex_shader_);
-        glAttachShader(id_, frag_shader_);
-        glLinkProgram(id_);
-        glValidateProgram(id_);
-        check_program_error();
-        glDetachShader(id_, vertex_shader_);
-        glDetachShader(id_, frag_shader_);
-    }
-
+    void attach_shaders();
 
     /*
     Creates a buffer, stores vertex data in it, and specifies how position and texture coordinates are mapped.
@@ -66,62 +34,19 @@ public:
         texAttr_id (const unsigned int): Id of the vertexAttribPointer to use for texture coordinate data of vertices.
     */
     void make_vertex_buffer(const float* vertices, const unsigned int size, 
-        unsigned int const posAttr_id, unsigned int const texAttr_id)
-    {
-        //generate buffer
-        unsigned int vb_id;
-        glGenBuffers(1, &vb_id);
-        glBindBuffer(GL_ARRAY_BUFFER, vb_id); //set buffer as current one
-        glBufferData(GL_ARRAY_BUFFER, size, vertices, GL_STATIC_DRAW); //add data to buffer
-        
-        //position attribute
-        glEnableVertexAttribArray(posAttr_id); 
-        glVertexAttribPointer(posAttr_id, 2, //number of position coordinates
-        GL_FLOAT, GL_FALSE, 4*sizeof(float), //size of each vertex
-        0); //where positions start
-
-
-        //texture coordinate attribute
-        glEnableVertexAttribArray(texAttr_id);
-        glVertexAttribPointer(texAttr_id, 2, //number of coordinates for a texture coordinate
-            GL_FLOAT, GL_FALSE, 4*sizeof(float), //size of each vertex
-            (void*)(2*sizeof(float)));//where texture coordinate starts
-
-        //save the ids
-        pos_attrib_array_id_ = posAttr_id;
-        tex_attrib_array_id_ = texAttr_id;
-    }
+        unsigned int const posAttr_id, unsigned int const texAttr_id);
 
     //enable vertexAttribArrays associated with this program
-    void enable_vertex_array()
-    {
-        glEnableVertexAttribArray(pos_attrib_array_id_);
-        glEnableVertexAttribArray(tex_attrib_array_id_);
-
-    }
+    void enable_vertex_array();
 
     //disable vertexAttribArrays associated with this program
-    void disable_vertex_array(unsigned int index)
-    {
-        glDisableVertexAttribArray(pos_attrib_array_id_);
-        glDisableVertexAttribArray(tex_attrib_array_id_);
-    }
-
-    
+    void disable_vertex_array(unsigned int index);
 
     //gets id of this program
-    unsigned int id()
-    {
-        return id_;
-    }
-
+    unsigned int id();
 
     //activates this program and its associated vertex array
-    void use()
-    {
-        enable_vertex_array();
-        glUseProgram(id_);
-    }
+    void use();
 
 
 private:
@@ -130,39 +55,11 @@ private:
     Parameters:
         shader (const unsigned int): Id of the shader.
     */
-    void check_compile_error(const unsigned int shader)
-    {
-        int compile_ok;
-        glGetShaderiv(shader, GL_COMPILE_STATUS, &compile_ok);
-        if(compile_ok == GL_FALSE) //if error occurs
-        {
-            int errLength;
-            glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &errLength);
-            char* errMessage = new char[errLength];
-            glGetShaderInfoLog(shader, errLength, &errLength, errMessage);
-            std::cout << "Error compiling shader: " << std::endl;
-            std::cout << errMessage << std::endl;
-
-            //clean up
-            glDeleteShader(shader);
-            delete errMessage;
-            exit(0);
-        }
-    }
+    void check_compile_error(const unsigned int shader);
 
     //checks if linked program has an error, if so, prints it and terminates the program
-    void check_program_error()
-    {
-        int program_ok;
-        glGetProgramiv(id_, GL_LINK_STATUS, &program_ok);
-        char* program_err_log = new char[512];
-        if(!program_ok) {
-            glGetProgramInfoLog(id_, 512, NULL, program_err_log);
-            std::cout << "Error linking program: " << program_err_log << std::endl;
-            delete program_err_log;
-            exit(0);
-        }
-    }
+    void check_program_error();
+
 
     const unsigned int id_; //id of program
     const unsigned int vertex_shader_; //id of the vertex shader
