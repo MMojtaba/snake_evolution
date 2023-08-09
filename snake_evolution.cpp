@@ -40,7 +40,7 @@ int main()
     }
   
     //print opengl version information TODO remove
-    print_gl_version();
+    // print_gl_version();
 
     //clean up
     glfwDestroyWindow(window);

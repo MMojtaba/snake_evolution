@@ -418,7 +418,7 @@ void Game::process_collision()
             || x_right_corners && y_bottom_corners
             || x_right_corners && y_top_corners)
         {   //TODO
-            std::cout << "snake: " << x_ << ", " << y_ << " body" << i << " : " << body_x << ", " << body_y << std::endl;
+            // std::cout << "snake: " << x_ << ", " << y_ << " body" << i << " : " << body_x << ", " << body_y << std::endl;
             // while(true);
             process_game_over();
             // length_ += 15;
@@ -435,7 +435,7 @@ void Game::process_game_over()
     //wait a bit
     reset_timer("game_over");
     while(!check_timer("game_over"));
-    // in_menu_ = true;
+    in_menu_ = true;
 }
 
 /*set timer to current time
@@ -589,6 +589,7 @@ void Game::load_all_textures()
     digits_[4] = texture_digit4.id();
     //five
     load_image("five", image_digit, imDigit_width, imDigit_height);
+
     Texture texture_digit5(image_digit, 6, imDigit_width, imDigit_height);
     digits_[5] = texture_digit5.id();
     //six
