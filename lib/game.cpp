@@ -332,7 +332,7 @@ void Game::process_input(GLFWwindow* window, const int key, const int action)
     }
 
     //up and down switches the selected button in the main menu
-    if((key == GLFW_KEY_UP && action == GLFW_PRESS) || (key == GLFW_KEY_DOWN && action == GLFW_PRESS))
+    if((in_menu() && key == GLFW_KEY_UP && action == GLFW_PRESS) || (in_menu() && key == GLFW_KEY_DOWN && action == GLFW_PRESS))
     {
         change_play_button_selected();
     }
