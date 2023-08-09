@@ -13,7 +13,7 @@ Game::Game(const unsigned int win_width, const unsigned int win_height):
     window_height_(win_height),
     score_area_height_(100),
     entity_width_(32.0f),
-    velocity_(4.0f),
+    velocity_(8.0f), //4
     //vertex shader code for game and main menu
     vs_code_game_( 
         "#version 120\n"
@@ -243,22 +243,26 @@ void Game::render_game()
         //render snake body
         for(int i = 0; i < snake_body_locX_.size(); ++i)
         {
-            std::cout << "body" << i << ": " << snake_body_locX_[i] << ", " << snake_body_locY_[i] << std::endl;
+            // std::cout << "body" << i << ": " << snake_body_locX_[i] << ", " << snake_body_locY_[i] << std::endl;
             activate_texture(7, snake_body_locX_[i], snake_body_locY_[i]);
             glDrawArrays(GL_QUADS, 0, 4);
         }
         
-        
+        // //move snake every time interval
+        // if(check_timer("move_snake"))
+        // {
+        //     // move snake
+        //     x_ += velocity_x_;
+        //     y_ += velocity_y_;
 
-        // move snake
-        x_ += velocity_x_;
-        y_ += velocity_y_;
+        //     //check for collision
+        //     process_collision(); //TODO move up?
 
-        //check for collision
-        process_collision(); //TODO move up?
+        //     reset_timer("timer_move");
+        // }
 
-        //move the snake's body
-        move_snake_body();        
+        //move snake and check for collision
+        move_snake();        
     }
 
 }
@@ -305,7 +309,7 @@ void Game::reset_game()
     snake_body_locX_.clear();
     snake_body_locY_.clear();
 
-    timer_ = std::chrono::high_resolution_clock::now();
+    reset_timer();
     x_prev_ = x_;
     y_prev_ = y_;
     // popped_ = false; TODO remove
@@ -401,10 +405,10 @@ void Game::process_collision()
         const float body_x = snake_body_locX_[i];
         const float body_y = snake_body_locY_[i];
         
-        //x collisions for head left and right side
+        //x collisions for head's left and right side
         const float l = 8.0f; //leeway for collision
         const bool x_left_corners = x_ >= body_x+l && x_+l <= body_x+entity_width_;
-        const bool x_right_corners = x_+entity_width_ >= body_x+l && x_+l <= body_x+entity_width_;
+        const bool x_right_corners = x_+entity_width_ >= body_x+l && x_+entity_width_+l <= body_x+entity_width_;
         //y collisions for head's top and bottom side
         const bool y_bottom_corners = y_ >= body_y+l && y_+l <= body_y+entity_width_;
         const bool y_top_corners = y_+entity_width_ >= body_y+l && y_+entity_width_+l <= body_y+entity_width_;
@@ -414,7 +418,7 @@ void Game::process_collision()
             || x_right_corners && y_bottom_corners
             || x_right_corners && y_top_corners)
         {   //TODO
-            // std::cout << "snake: " << x_ << ", " << y_ << " body" << i << " : " << body_x << ", " << body_y << std::endl;
+            std::cout << "snake: " << x_ << ", " << y_ << " body" << i << " : " << body_x << ", " << body_y << std::endl;
             // while(true);
             process_game_over();
             // length_ += 15;
@@ -428,9 +432,67 @@ void Game::process_collision()
 //handles when the player loses
 void Game::process_game_over()
 {
-    // reset_game();
-    in_menu_ = true;
+    //wait a bit
+    reset_timer("game_over");
+    while(!check_timer("game_over"));
+    // in_menu_ = true;
 }
+
+/*set timer to current time
+Parameters:
+    which (const string): Which timer to reset
+*/
+void Game::reset_timer(const std::string usecase)
+{
+    if(usecase == "move_snake_body" || usecase == "game_over")
+    {
+        timer_ = std::chrono::high_resolution_clock::now();
+    }else if(usecase == "move_snake")
+    {
+        timer_move_ = std::chrono::high_resolution_clock::now();
+    }else{
+        timer_ = std::chrono::high_resolution_clock::now();
+        timer_move_ = std::chrono::high_resolution_clock::now();
+    }
+}
+
+/*
+Says whether enough time has passed.
+Parameters:
+    usecase (std::string): Use case for which it should be checked if enough time has passed
+Returns:
+    bool: Whether enough time has passed.
+*/
+bool Game::check_timer(std::string usecase)
+{
+    // if(float(clock() - timer_)/CLOCKS_PER_SEC > 0.005f)
+    // std::chrono::duration<float, std::milli> time_diff = std::chrono::high_resolution_clock::now() - timer_;
+    // time_t time_new = time(0);
+    // std::cout << time_new << std::endl;
+    // if((difftime(time_new, timer_)) > 1.0)
+    // if(time_diff.count() > 200.0f)//110
+    std::chrono::duration<float, std::milli> time_diff = std::chrono::high_resolution_clock::now() - timer_;
+
+    if(usecase == "move_snake_body")
+    {
+        return time_diff.count () > 240.0f; //110, 200
+    }
+    
+    if(usecase == "game_over")
+    {
+        return time_diff.count () > 1000.0f;
+    }
+
+    if(usecase == "move_snake")
+    {
+        std::chrono::duration<float, std::milli> time_diff_move = std::chrono::high_resolution_clock::now() - timer_move_;
+        return time_diff_move.count () > 50.0f;
+    }
+
+
+    return false;
+}
+
 
 /*
 Updates snake head's texture for rotation effect
@@ -588,16 +650,23 @@ void Game::render_score(unsigned int& arrayOffset)
 }
 
 //Update the position of the snake's body 
-void Game::move_snake_body()
+void Game::move_snake()
 {
-    //propegate the prev position of the snake through the body after a period of time
+    //move snake every time interval
+    if(check_timer("move_snake"))
+    {
+        // move snake
+        x_ += velocity_x_;
+        y_ += velocity_y_;
 
-    // if(float(clock() - timer_)/CLOCKS_PER_SEC > 0.005f)
-    std::chrono::duration<float, std::milli> time_diff = std::chrono::high_resolution_clock::now() - timer_;
-    // time_t time_new = time(0);
-    // std::cout << time_new << std::endl;
-    // if((difftime(time_new, timer_)) > 1.0)
-    if(time_diff.count() > 200.0f)//110
+        //check for collision
+        process_collision(); //TODO move up?
+
+        reset_timer("move_snake");
+    }
+    
+    //propegate the prev position of the snake through the body after a period of time
+    if(check_timer("move_snake_body"))
     {
         
         //increase queue's length if snake should be larger
@@ -639,10 +708,13 @@ void Game::move_snake_body()
         //set value of prev position to current one
         x_prev_ = x_;
         y_prev_ = y_;
+
+        
         
         //reset timer
-        timer_ = std::chrono::high_resolution_clock::now();
+        reset_timer("move_snake_body");
     }
+    
 }
 
 /*

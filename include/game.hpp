@@ -89,7 +89,22 @@ private:
     void render_score(unsigned int& arrayOffset);
 
     //Update the position of the snake's body 
-    void move_snake_body();
+    void move_snake();
+
+    /*set timer to current time
+    Parameters:
+        usecase (const string): Which timer to reset
+    */
+    void reset_timer(const std::string usecase = "all");
+
+    /*
+    Says whether enough time has passed.
+    Parameters:
+        usecase (std::string): Use case for which it should be checked if enough time has passed
+    Returns:
+        bool: Whether enough time has passed.
+    */
+   bool check_timer(std::string usecase);
 
     /*
     Activates the texture stored at given slot, and sets its position attribute to provided values.
@@ -125,6 +140,7 @@ private:
     int score_; //user's score
     // clock_t timer_; //used as a timer to update snake's body location
     std::chrono::high_resolution_clock::time_point timer_;
+    std::chrono::high_resolution_clock::time_point timer_move_; //use to make snake move at the same rate, regardless of environemnt program runs in
 
     const float velocity_; //how fast the snake moves
     float velocity_x_; //velocity of snake in x direction
