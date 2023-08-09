@@ -25,6 +25,12 @@ public:
 
     ~Game();
 
+    //Not movale or copyable
+    Game(const Game&) = delete;
+    Game& operator=(const Game&) = delete;
+    Game(Game&&) = delete;
+    Game& operator=(Game&&) = delete;
+
     //render the game
     void render_game();
     
@@ -81,6 +87,9 @@ private:
         arrayOffset (unsigned int&): Where the data related to score starts in the vertex buffer
     */
     void render_score(unsigned int& arrayOffset);
+
+    //Update the position of the snake's body 
+    void move_snake_body();
 
     /*
     Activates the texture stored at given slot, and sets its position attribute to provided values.

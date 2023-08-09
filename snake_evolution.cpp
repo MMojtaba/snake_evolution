@@ -86,7 +86,7 @@ GLFWwindow* init()
 	}
 	glfwMakeContextCurrent(window);
 
-    glfwSwapInterval(1); //set frame rate to refresh rate
+    glfwSwapInterval(1); //set buffer swap interval to refresh rate of screen
 
     //Key callback for reading user inputs
     glfwSetKeyCallback(window, keyCallback);

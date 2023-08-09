@@ -18,7 +18,9 @@ public:
     */
     Texture(const unsigned char* image, unsigned int slot, 
         unsigned int width, unsigned int height);
-        
+
+    ~Texture() = default;
+
 
     /*
     Get id associated with this texture.
