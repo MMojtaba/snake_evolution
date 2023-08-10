@@ -502,6 +502,8 @@ void Game::load_all_textures()
 
     //load snake facing down image and create a texture from it
     load_image("snake_down", image_snake_head_, imDims, imDims);
+    // load_image("apple.bmp", image_snake_head_, imDims, imDims,true);
+
     //add image to a texture object
     Texture texture_snake_head_down(image_snake_head_, 2, imDims, imDims);
     head_down_tex_id_ = texture_snake_head_down.id();
