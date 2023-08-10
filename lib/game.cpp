@@ -13,7 +13,7 @@ Game::Game(const unsigned int win_width, const unsigned int win_height):
     window_height_(win_height),
     score_area_height_(100),
     entity_width_(32.0f),
-    velocity_(8.0f), //4
+    velocity_(4.0f), //4
     //vertex shader code for game and main menu
     vs_code_game_( 
         "#version 120\n"
@@ -248,18 +248,6 @@ void Game::render_game()
             glDrawArrays(GL_QUADS, 0, 4);
         }
         
-        // //move snake every time interval
-        // if(check_timer("move_snake"))
-        // {
-        //     // move snake
-        //     x_ += velocity_x_;
-        //     y_ += velocity_y_;
-
-        //     //check for collision
-        //     process_collision(); //TODO move up?
-
-        //     reset_timer("timer_move");
-        // }
 
         //move snake and check for collision
         move_snake();        
@@ -486,7 +474,7 @@ bool Game::check_timer(std::string usecase)
     if(usecase == "move_snake")
     {
         std::chrono::duration<float, std::milli> time_diff_move = std::chrono::high_resolution_clock::now() - timer_move_;
-        return time_diff_move.count () > 50.0f;
+        return time_diff_move.count () > 25.0f;
     }
 
 
