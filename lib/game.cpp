@@ -170,8 +170,9 @@ Game::Game(const unsigned int win_width, const unsigned int win_height):
 
 Game::~Game()
 {
-    // delete image_snake_head_;
-    // delete image_apple_;
+    delete image_square_;
+    delete image_rectangle_;
+    delete image_digit_;
 }
 
 
@@ -498,105 +499,105 @@ void Game::load_all_textures()
 {
     //stores snake head image
     constexpr unsigned int imDims = 32;
-    image_snake_head_ = new unsigned char[imDims*imDims*4];
+    image_square_ = new unsigned char[imDims*imDims*4];
 
     //load snake facing down image and create a texture from it
-    load_image("snake_down", image_snake_head_, imDims, imDims);
-    // load_image("apple.bmp", image_snake_head_, imDims, imDims,true);
+    load_image("snake_down", image_square_, imDims, imDims);
+    // load_image("apple.bmp", image_square_, imDims, imDims,true);
 
     //add image to a texture object
-    Texture texture_snake_head_down(image_snake_head_, 2, imDims, imDims);
+    Texture texture_snake_head_down(image_square_, 2, imDims, imDims);
     head_down_tex_id_ = texture_snake_head_down.id();
 
     //load snake facing right image and create a texture from it
-    load_image("snake_right", image_snake_head_, imDims, imDims);
-    Texture texture_snake_head_right(image_snake_head_, 2, imDims, imDims);
+    load_image("snake_right", image_square_, imDims, imDims);
+    Texture texture_snake_head_right(image_square_, 2, imDims, imDims);
     head_right_tex_id_ = texture_snake_head_right.id();
 
     //load snake facing right image and create a texture from it
-    load_image("snake_left", image_snake_head_, imDims, imDims);
+    load_image("snake_left", image_square_, imDims, imDims);
     //add image to a texture object
-    Texture texture_snake_head_left(image_snake_head_, 2, imDims, imDims);
+    Texture texture_snake_head_left(image_square_, 2, imDims, imDims);
     head_left_tex_id_ = texture_snake_head_left.id();
 
     //load snake facing right image and create a texture from it
-    load_image("snake_body", image_snake_head_, imDims, imDims);
+    load_image("snake_body", image_square_, imDims, imDims);
     //add image to a texture object
-    Texture texture_snake_body(image_snake_head_, 7, imDims, imDims);
+    Texture texture_snake_body(image_square_, 7, imDims, imDims);
 
     //load snake facing up image and create a texture from it
-    load_image("snake_head", image_snake_head_, imDims, imDims);
+    load_image("snake_head", image_square_, imDims, imDims);
     //add image to a texture object
-    Texture texture_snake_head_up(image_snake_head_, 2, imDims, imDims);
+    Texture texture_snake_head_up(image_square_, 2, imDims, imDims);
     head_up_tex_id_ = texture_snake_head_up.id();
 
 
     //load apple image and create a texture from it
-    image_apple_ = new unsigned char[imDims*imDims*4];
-    load_image("apple", image_apple_, imDims, imDims);
+    // image_apple_ = new unsigned char[imDims*imDims*4];
+    load_image("apple", image_square_, imDims, imDims);
     //create apple texture
-    Texture texture_apple(image_apple_, 3, imDims, imDims);
+    Texture texture_apple(image_square_, 3, imDims, imDims);
 
 
     //load play button image and create a texture from it
     constexpr unsigned int imWidth = 64;
     constexpr unsigned int imHeight = 32;
-    unsigned char* image = new unsigned char[imWidth*imHeight*4];
-    load_image("play", image, imWidth, imHeight);
-    Texture texture_play(image, 0, imWidth, imHeight);
+    image_rectangle_ = new unsigned char[imWidth*imHeight*4];
+    load_image("play", image_rectangle_, imWidth, imHeight);
+    Texture texture_play(image_rectangle_, 0, imWidth, imHeight);
 
     //load quit button image  and create a texture from it
-    load_image("quit", image, imWidth, imHeight);
-    Texture texture_quit(image, 1, imWidth, imHeight);
+    load_image("quit", image_rectangle_, imWidth, imHeight);
+    Texture texture_quit(image_rectangle_, 1, imWidth, imHeight);
     
     //load score image and create a texture from it
-    load_image("score", image, imWidth, imHeight);
-    Texture texture_score(image, 4, imWidth, imHeight);
+    load_image("score", image_rectangle_, imWidth, imHeight);
+    Texture texture_score(image_rectangle_, 4, imWidth, imHeight);
 
     //load digits (0 to 9) images and and create textures from them
     constexpr unsigned int imDigit_width = 4;
     constexpr unsigned int imDigit_height = 8;
-    unsigned char* image_digit = new unsigned char[imDigit_width*imDigit_height*4];
+    image_digit_ = new unsigned char[imDigit_width*imDigit_height*4];
     //zero
-    load_image("zero", image_digit, imDigit_width, imDigit_height);
-    Texture texture_digit0(image_digit, 5, imDigit_width, imDigit_height);
+    load_image("zero", image_digit_, imDigit_width, imDigit_height);
+    Texture texture_digit0(image_digit_, 5, imDigit_width, imDigit_height);
     digits_[0] = texture_digit0.id();
     //one
-    load_image("one", image_digit, imDigit_width, imDigit_height);
-    Texture texture_digit1(image_digit, 6, imDigit_width, imDigit_height);
+    load_image("one", image_digit_, imDigit_width, imDigit_height);
+    Texture texture_digit1(image_digit_, 6, imDigit_width, imDigit_height);
     digits_[1] = texture_digit1.id();
     //two
-    load_image("two", image_digit, imDigit_width, imDigit_height);
-    Texture texture_digit2(image_digit, 6, imDigit_width, imDigit_height);
+    load_image("two", image_digit_, imDigit_width, imDigit_height);
+    Texture texture_digit2(image_digit_, 6, imDigit_width, imDigit_height);
     digits_[2] = texture_digit2.id();
     //three
-    load_image("three", image_digit, imDigit_width, imDigit_height);
-    Texture texture_digit3(image_digit, 6, imDigit_width, imDigit_height);
+    load_image("three", image_digit_, imDigit_width, imDigit_height);
+    Texture texture_digit3(image_digit_, 6, imDigit_width, imDigit_height);
     digits_[3] = texture_digit3.id();
     //four
-    load_image("four", image_digit, imDigit_width, imDigit_height);
-    Texture texture_digit4(image_digit, 6, imDigit_width, imDigit_height);
+    load_image("four", image_digit_, imDigit_width, imDigit_height);
+    Texture texture_digit4(image_digit_, 6, imDigit_width, imDigit_height);
     digits_[4] = texture_digit4.id();
     //five
-    load_image("five", image_digit, imDigit_width, imDigit_height);
+    load_image("five", image_digit_, imDigit_width, imDigit_height);
 
-    Texture texture_digit5(image_digit, 6, imDigit_width, imDigit_height);
+    Texture texture_digit5(image_digit_, 6, imDigit_width, imDigit_height);
     digits_[5] = texture_digit5.id();
     //six
-    load_image("six", image_digit, imDigit_width, imDigit_height);
-    Texture texture_digit6(image_digit, 6, imDigit_width, imDigit_height);
+    load_image("six", image_digit_, imDigit_width, imDigit_height);
+    Texture texture_digit6(image_digit_, 6, imDigit_width, imDigit_height);
     digits_[6] = texture_digit6.id();
     //seven
-    load_image("seven", image_digit, imDigit_width, imDigit_height);
-    Texture texture_digit7(image_digit, 6, imDigit_width, imDigit_height);
+    load_image("seven", image_digit_, imDigit_width, imDigit_height);
+    Texture texture_digit7(image_digit_, 6, imDigit_width, imDigit_height);
     digits_[7] = texture_digit7.id();
     //eight
-    load_image("eight", image_digit, imDigit_width, imDigit_height);
-    Texture texture_digit8(image_digit, 6, imDigit_width, imDigit_height);
+    load_image("eight", image_digit_, imDigit_width, imDigit_height);
+    Texture texture_digit8(image_digit_, 6, imDigit_width, imDigit_height);
     digits_[8] = texture_digit8.id();
     //nine
-    load_image("nine", image_digit, imDigit_width, imDigit_height);
-    Texture texture_digit9(image_digit, 6, imDigit_width, imDigit_height);
+    load_image("nine", image_digit_, imDigit_width, imDigit_height);
+    Texture texture_digit9(image_digit_, 6, imDigit_width, imDigit_height);
     digits_[9] = texture_digit9.id();
     
 }

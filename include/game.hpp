@@ -178,8 +178,9 @@ private:
     // bool popped_;
 
     //pointers to image data
-    unsigned char* image_snake_head_;
-    unsigned char* image_apple_;
+    unsigned char* image_square_;
+    unsigned char* image_rectangle_;
+    unsigned char* image_digit_;
 
 };
 
