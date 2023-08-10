@@ -39,7 +39,7 @@ int main()
         glfwPollEvents();//poll for events (such as quit)
     }
   
-    //print opengl version information TODO remove
+    //print opengl version information
     // print_gl_version();
 
     //clean up
@@ -91,7 +91,7 @@ GLFWwindow* init()
     //Key callback for reading user inputs
     glfwSetKeyCallback(window, keyCallback);
 
-    //Don't allow user to resize window
+    //Don't allow user to resize window (doesn't work on lab machines)
     // glfwSetWindowAttrib(window, GLFW_RESIZABLE, false);
     
     //initialize glew

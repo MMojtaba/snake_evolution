@@ -138,8 +138,7 @@ private:
     bool play_button_selected_; //whether the play button is selected in the mneu
     bool in_menu_; //whether the use is in the menu
     int score_; //user's score
-    // clock_t timer_; //used as a timer to update snake's body location
-    std::chrono::high_resolution_clock::time_point timer_;
+    std::chrono::high_resolution_clock::time_point timer_; //used as a timer to update snake's body location
     std::chrono::high_resolution_clock::time_point timer_move_; //use to make snake move at the same rate, regardless of environemnt program runs in
 
     const float velocity_; //how fast the snake moves
@@ -174,8 +173,6 @@ private:
     unsigned int head_right_tex_id_;
     unsigned int head_left_tex_id_;
     unsigned int digits_[10];
-
-    // bool popped_;
 
     //pointers to image data
     unsigned char* image_square_;

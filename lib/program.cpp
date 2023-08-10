@@ -126,18 +126,13 @@ void Program::check_compile_error(const unsigned int shader)
     glGetShaderiv(shader, GL_COMPILE_STATUS, &compile_ok);
     if(compile_ok == GL_FALSE) //if error occurs
     {
-        int errLength;
-        // glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &errLength);
-        // char* errMessage = new char[errLength];
-        errLength = 512;
         char errMessage[512];
-        glGetShaderInfoLog(shader, errLength, &errLength, errMessage);
+        glGetShaderInfoLog(shader, 512, NULL, errMessage);
         std::cout << "Error compiling shader: " << std::endl;
         std::cout << errMessage << std::endl;
 
         //clean up
         glDeleteShader(shader);
-        // delete errMessage;
         exit(0);
     }
 }
@@ -147,13 +142,11 @@ void Program::check_program_error()
 {
     int program_ok;
     glGetProgramiv(id_, GL_LINK_STATUS, &program_ok);
-    // char* program_err_log = new char[512];
     char program_err_log[512];
 
     if(!program_ok) {
         glGetProgramInfoLog(id_, 512, NULL, program_err_log);
         std::cout << "Error linking program: " << program_err_log << std::endl;
-        // delete program_err_log;
         exit(0);
     }
     

@@ -244,7 +244,6 @@ void Game::render_game()
         //render snake body
         for(int i = 0; i < snake_body_locX_.size(); ++i)
         {
-            // std::cout << "body" << i << ": " << snake_body_locX_[i] << ", " << snake_body_locY_[i] << std::endl;
             activate_texture(7, snake_body_locX_[i], snake_body_locY_[i]);
             glDrawArrays(GL_QUADS, 0, 4);
         }
@@ -301,7 +300,6 @@ void Game::reset_game()
     reset_timer();
     x_prev_ = x_;
     y_prev_ = y_;
-    // popped_ = false; TODO remove
 
 }
 
@@ -380,8 +378,6 @@ void Game::process_collision()
         ++score_;
         if(score_ > 99) score_ = 99; //can't display more than 2 digits of score
         length_+=score_/10+1; //the higher the score, the faster snake grows
-        // std::cout << "Scored: " << score_ << std::endl; //TODO
-        // std::cout << "length: " << length_ << std::endl; //TODO
 
         //change apple's location
         random_location(x_apple_, y_apple_);
@@ -406,11 +402,8 @@ void Game::process_collision()
             || x_left_corners && y_top_corners
             || x_right_corners && y_bottom_corners
             || x_right_corners && y_top_corners)
-        {   //TODO
-            // std::cout << "snake: " << x_ << ", " << y_ << " body" << i << " : " << body_x << ", " << body_y << std::endl;
-            // while(true);
+        {   
             process_game_over();
-            // length_ += 15;
             return;
         }
     }
@@ -454,12 +447,6 @@ Returns:
 */
 bool Game::check_timer(std::string usecase)
 {
-    // if(float(clock() - timer_)/CLOCKS_PER_SEC > 0.005f)
-    // std::chrono::duration<float, std::milli> time_diff = std::chrono::high_resolution_clock::now() - timer_;
-    // time_t time_new = time(0);
-    // std::cout << time_new << std::endl;
-    // if((difftime(time_new, timer_)) > 1.0)
-    // if(time_diff.count() > 200.0f)//110
     std::chrono::duration<float, std::milli> time_diff = std::chrono::high_resolution_clock::now() - timer_;
 
     if(usecase == "move_snake_body")
@@ -477,7 +464,6 @@ bool Game::check_timer(std::string usecase)
         std::chrono::duration<float, std::milli> time_diff_move = std::chrono::high_resolution_clock::now() - timer_move_;
         return time_diff_move.count () > 25.0f;
     }
-
 
     return false;
 }
@@ -503,7 +489,6 @@ void Game::load_all_textures()
 
     //load snake facing down image and create a texture from it
     load_image("snake_down", image_square_, imDims, imDims);
-    // load_image("apple.bmp", image_square_, imDims, imDims,true);
 
     //add image to a texture object
     Texture texture_snake_head_down(image_square_, 2, imDims, imDims);
@@ -531,13 +516,10 @@ void Game::load_all_textures()
     Texture texture_snake_head_up(image_square_, 2, imDims, imDims);
     head_up_tex_id_ = texture_snake_head_up.id();
 
-
     //load apple image and create a texture from it
-    // image_apple_ = new unsigned char[imDims*imDims*4];
     load_image("apple", image_square_, imDims, imDims);
     //create apple texture
     Texture texture_apple(image_square_, 3, imDims, imDims);
-
 
     //load play button image and create a texture from it
     constexpr unsigned int imWidth = 64;
@@ -674,7 +656,6 @@ void Game::move_snake()
         {
             snake_body_locX_.pop_back();
             snake_body_locY_.pop_back();
-            // popped_ = true;
         }
 
         //propegate values towards the tail of the snake
@@ -689,11 +670,10 @@ void Game::move_snake()
         }
 
         //add the new position value to the queue
-        if(length_ > snake_body_locX_.size()) //popped_
+        if(length_ > snake_body_locX_.size()) 
         {
             snake_body_locX_.push_front(x_prev_);
             snake_body_locY_.push_front(y_prev_);
-            // popped_ = false;
         }
 
 
