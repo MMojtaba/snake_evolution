@@ -8,7 +8,7 @@ Parameters:
 */
 Game::Game(const unsigned int win_width, const unsigned int win_height): 
     play_button_selected_(true),
-    in_menu_(true), //TODO change back to true
+    in_menu_(true), 
     window_width_(win_width),
     window_height_(win_height),
     score_area_height_(100),
@@ -306,11 +306,6 @@ void Game::reset_game()
 //handle user input
 void Game::process_input(GLFWwindow* window, const int key, const int action)
 {
-    //for debugging: TODO remove
-    if(key==GLFW_KEY_BACKSLASH && action == GLFW_PRESS)
-    {
-        change_in_menu();
-    }
 
     //escape key: close game
     if(key == GLFW_KEY_ESCAPE)
@@ -634,7 +629,7 @@ void Game::move_snake()
         y_ += velocity_y_;
 
         //check for collision
-        process_collision(); //TODO move up?
+        process_collision(); 
 
         reset_timer("move_snake");
     }
