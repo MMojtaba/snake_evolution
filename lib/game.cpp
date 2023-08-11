@@ -350,8 +350,23 @@ void Game::process_input(GLFWwindow* window, const int key, const int action)
 void Game::random_location(float& x, float& y)
 {
     srand(time(NULL));
-    x = rand() % (window_width_-150) + 100; //between 100 and 650
-    y = rand() % (window_height_-150-score_area_height_) + 100; //between 100 and 400
+    float x_new;
+    float y_new;
+    float x_diff = 0;
+    float y_diff = 0;
+
+    //keep looping until the position has changed enough
+    while(x_diff < 50 && x_diff > -50 && y_diff < 50 && y_diff > -50)
+    {
+        x_new = rand() % (window_width_-150) + 100; //between 100 and 650
+        y_new = rand() % (window_height_-150-score_area_height_) + 100; //between 100 and 400
+        x_diff = x_new - x;
+        y_diff = y_new - y;
+
+    }
+    x = x_new;
+    y = y_new;
+
 }
 
 //checks whether the snake is colliding with something and processes it
