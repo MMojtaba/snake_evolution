@@ -1,6 +1,7 @@
-# Description
+# Info
 This project was made for Dr. Michael D. Adams' SENG 475 course at UVic.
-This Virtual Machien Disk that contains the tooks to run this application can be found at: https://www.ece.uvic.ca/~frodo/cppbook/#vm_disk_images
+This Virtual Machien Disk that contains the tooks to run this application can be found at: https://www.ece.uvic.ca/~frodo/cppbook/#vm_disk_images.
+OpenGL 2.1 and GLSL 1.2 were used, due to the limiation of the school's lab machines.
 
 ## To build, install, and run:
 Navigate to the directory containing this README file.
